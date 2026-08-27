@@ -1,5 +1,12 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.2] - 2026-08-27
+### Corrigé (Bug Bloquant Frontend / UX)
+- **Catalogue des cartes Home Assistant (`window.customCards`)** : Enregistrement officiel avec `preview: true` permettant d'ajouter la carte en 1 clic sans aucun YAML.
+- **Résilience `setConfig()` & `getStubConfig()`** : Support natif d'une configuration vide `{}` sans exception.
+- **Correction SyntaxError JavaScript** : Résolution de l'échappement de chaîne qui bloquait l'exécution du script frontend dans le navigateur.
+- **Écran d'accueil Zéro-Audit** : Affichage d'un panneau d'accueil bienveillant *« Bienvenue dans Smart Home Score — Lancer mon premier audit »* lorsque l'intégration est fraîchement installée.
+
 ## [0.7.0-beta.1] - 2026-08-27 (Bêta Communautaire)
 ### Ajouté
 - **Garde-fou Singleton HTTP** : Enregistrement de `async_register_static_paths` garanti strictly unique par processus Home Assistant (résiste à 10 reloads consécutifs).

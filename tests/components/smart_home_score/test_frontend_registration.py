@@ -1,6 +1,7 @@
-"""Tests for Modern Async Frontend Registration, Cache-Busting & Clean Unload (v0.7.0 Bêta)."""
+"""Tests for Modern Async Frontend Registration, Custom Card Catalog & Resilient Card Setup (v0.7.0-beta.2)."""
 import tests.components.smart_home_score.conftest  # noqa: F401
 import os
+import subprocess
 import unittest
 from unittest.mock import AsyncMock, MagicMock
 
@@ -10,12 +11,39 @@ from homeassistant.components.frontend import active_frontend_urls
 
 
 class TestFrontendRegistration(unittest.IsolatedAsyncioTestCase):
-    """Test suite for modern async static paths, add_extra_js_url, remove_extra_js_url and zero deprecated APIs."""
+    """Test suite for modern async static paths, custom card catalog, getStubConfig and zero JS syntax errors."""
 
     def test_frontend_file_is_strictly_embedded_in_integration_directory(self):
         """Test that JS file is present inside custom_components/.../frontend/ and self-contained."""
         frontend_path = "/Users/LEFRANCC/HomeAssistant/custom_components/smart_home_score/frontend/smart-home-score-card.js"
         self.assertTrue(os.path.exists(frontend_path), "Embedded frontend JS file must exist inside integration directory")
+
+    def test_javascript_syntax_is_strictly_valid(self):
+        """Test that frontend card JS file contains zero syntax errors."""
+        frontend_path = "/Users/LEFRANCC/HomeAssistant/custom_components/smart_home_score/frontend/smart-home-score-card.js"
+        res = subprocess.run(["node", "-c", frontend_path], capture_output=True, text=True)
+        self.assertEqual(res.returncode, 0, f"JavaScript syntax error in card: {res.stderr}")
+
+    def test_custom_cards_catalog_registration_and_stub_config(self):
+        """Test that the JS card defines getStubConfig and registers into window.customCards."""
+        frontend_path = "/Users/LEFRANCC/HomeAssistant/custom_components/smart_home_score/frontend/smart-home-score-card.js"
+        with open(frontend_path, "r", encoding="utf-8") as f:
+            code = f.read()
+
+        # 1. Verification of window.customCards catalog
+        self.assertIn("window.customCards = window.customCards || [];", code)
+        self.assertIn("type: 'smart-home-score-card'", code)
+        self.assertIn("name: 'Smart Home Score'", code)
+        self.assertIn("preview: true", code)
+
+        # 2. Verification of getStubConfig & setConfig resilience
+        self.assertIn("static getStubConfig()", code)
+        self.assertIn("setConfig(config)", code)
+        self.assertIn("this._config = config || {};", code)
+
+        # 3. Verification of Zero-Audit / Welcome screen
+        self.assertIn("Bienvenue dans Smart Home Score", code)
+        self.assertIn("Lancer mon premier audit", code)
 
     def test_no_deprecated_register_static_path_in_codebase(self):
         """Test that deprecated synchronous register_static_path is completely absent from component code."""
@@ -92,7 +120,6 @@ class TestFrontendRegistration(unittest.IsolatedAsyncioTestCase):
             await async_reload_entry(hass_mock, entry_mock)
             self.assertEqual(len(active_frontend_urls), 1)
             self.assertIn(URL_FRONTEND_CARD_VERSIONED, active_frontend_urls)
-            # Static path registration called strictly ONCE across all reloads
             self.assertEqual(hass_mock.http.async_register_static_paths.call_count, 1)
 
 
