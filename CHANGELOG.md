@@ -1,5 +1,12 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.3] - 2026-08-27
+### Amélioration (Frontend Auto-Loader & Lovelace Discovery)
+- **Auto-enregistrement Lovelace Resources** : Enregistrement automatique dans la collection des ressources Lovelace Home Assistant lors du démarrage de l'intégration pour un chargement instantané sans rechargement forcé de page.
+- **Console Banner Développeur** : Ajout du message de confirmation `SMART-HOME-SCORE v0.7.0-beta.3` dans la console navigateur pour faciliter le diagnostic.
+- **Résolution Dynamique des Entités** : Mécanisme de découverte d'entités résilient aux variations d'identifiants Home Assistant.
+- **Nettoyage HACS Integration** : Suppression du champ ambigu `filename` dans `hacs.json` pour garantir une distribution standard d'intégration.
+
 ## [0.7.0-beta.2] - 2026-08-27
 ### Corrigé (Bug Bloquant Frontend / UX)
 - **Catalogue des cartes Home Assistant (`window.customCards`)** : Enregistrement officiel avec `preview: true` permettant d'ajouter la carte en 1 clic sans aucun YAML.

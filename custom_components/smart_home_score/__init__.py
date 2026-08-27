@@ -83,10 +83,10 @@ DISPUTE_SCHEMA = vol.Schema(
 
 
 async def _async_register_frontend_resource(hass: HomeAssistant) -> None:
-    """Register embedded frontend card static endpoint ONCE per process, and add versioned JS URL."""
+    """Register embedded frontend card static endpoint ONCE per process, add versioned JS URL, and register in Lovelace resources."""
     static_frontend_path = os.path.join(os.path.dirname(__file__), "frontend")
     if os.path.exists(static_frontend_path):
-        # 1. Singleton HTTP static path registration (registered only once per process)
+        # 1. Singleton HTTP static path registration
         if not hass.data.get(STATIC_REGISTERED_KEY):
             if hasattr(hass, "http") and hasattr(hass.http, "async_register_static_paths"):
                 try:
@@ -104,9 +104,27 @@ async def _async_register_frontend_resource(hass: HomeAssistant) -> None:
                 except Exception as err:
                     _LOGGER.debug("Async HTTP static path registration notice: %s", err)
 
-        # 2. Official modern frontend JS registration
+        # 2. Official modern frontend JS registration (add_extra_js_url)
         add_extra_js_url(hass, URL_FRONTEND_CARD_VERSIONED, es5=False)
         _LOGGER.info("Smart Home Score frontend registered via add_extra_js_url: %s", URL_FRONTEND_CARD_VERSIONED)
+
+        # 3. Automatic Lovelace Resource Registration (for instantaneous live dashboard loading)
+        try:
+            lovelace_data = hass.data.get("lovelace")
+            if lovelace_data and hasattr(lovelace_data, "resources"):
+                resources = lovelace_data.resources
+                if hasattr(resources, "async_get_items") and hasattr(resources, "async_create_item"):
+                    items = resources.async_get_items()
+                    clean_url = URL_FRONTEND_CARD_VERSIONED.split("?")[0]
+                    existing = any(
+                        isinstance(item, dict) and item.get("url", "").split("?")[0] == clean_url
+                        for item in items
+                    )
+                    if not existing:
+                        await resources.async_create_item({"res_type": "module", "url": URL_FRONTEND_CARD_VERSIONED})
+                        _LOGGER.info("Smart Home Score registered in Lovelace resources collection")
+        except Exception as err:
+            _LOGGER.debug("Lovelace resources auto-registration notice: %s", err)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

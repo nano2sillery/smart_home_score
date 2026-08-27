@@ -1,9 +1,15 @@
 /**
- * Smart Home Score Lovelace Card (v0.7.0-beta.2)
+ * Smart Home Score Lovelace Custom Card (v0.7.0-beta.3)
  * Author: Cyrille LEFRANC
- * 100% Local Lovelace UI Card for Home Assistant.
- * Zero-YAML card picker integration, resilient setConfig, dynamic audit rendering.
+ * 100% Local Lovelace Card for Home Assistant.
+ * Fully compliant with Home Assistant Custom Card Specification & Visual Card Picker.
  */
+
+console.info(
+  '%c SMART-HOME-SCORE %c v0.7.0-beta.3 ',
+  'color: white; background: #3b82f6; font-weight: 700; border-radius: 3px 0 0 3px;',
+  'color: #3b82f6; background: #1e293b; font-weight: 700; border-radius: 0 3px 3px 0;'
+);
 
 class SmartHomeScoreCard extends HTMLElement {
   constructor() {
@@ -14,7 +20,7 @@ class SmartHomeScoreCard extends HTMLElement {
     this.attachShadow({ mode: 'open' });
   }
 
-  static getStubConfig() {
+  static getStubConfig(hass, unusedEntities, allEntities) {
     return {};
   }
 
@@ -32,14 +38,29 @@ class SmartHomeScoreCard extends HTMLElement {
     return 6;
   }
 
+  _getEntity(suffix) {
+    if (!this._hass?.states) return null;
+    // 1. Direct standard entity ID
+    if (this._hass.states[`sensor.smart_home_score_${suffix}`]) {
+      return this._hass.states[`sensor.smart_home_score_${suffix}`];
+    }
+    // 2. Short entity ID fallback
+    if (this._hass.states[`sensor.${suffix}`]) {
+      return this._hass.states[`sensor.${suffix}`];
+    }
+    // 3. Dynamic lookup across all states
+    const states = Object.values(this._hass.states);
+    return states.find(s => s.entity_id.startsWith('sensor.') && s.entity_id.includes(suffix)) || null;
+  }
+
   _render() {
     if (!this.shadowRoot) return;
 
-    const globalScoreSensor = this._hass?.states?.['sensor.smart_home_score_global_score'];
-    const completenessSensor = this._hass?.states?.['sensor.smart_home_score_completeness'];
-    const maturitySensor = this._hass?.states?.['sensor.smart_home_score_maturity_level'];
-    const criticalSensor = this._hass?.states?.['sensor.smart_home_score_critical_risks'];
-    const potentialGainSensor = this._hass?.states?.['sensor.smart_home_score_potential_gain'];
+    const globalScoreSensor = this._getEntity('global_score');
+    const completenessSensor = this._getEntity('completeness');
+    const maturitySensor = this._getEntity('maturity_level');
+    const criticalSensor = this._getEntity('critical_risks');
+    const potentialGainSensor = this._getEntity('potential_gain');
 
     const hasData = globalScoreSensor && globalScoreSensor.state !== 'unknown' && globalScoreSensor.state !== 'unavailable';
     const scoreVal = hasData ? parseFloat(globalScoreSensor.state) : 0.0;
@@ -223,7 +244,7 @@ class SmartHomeScoreCard extends HTMLElement {
         .shs-domain-score {
           font-size: 1rem;
           font-weight: 700;
-          color: #93c5fd;
+          color: #93c5fa;
         }
       </style>
 
@@ -232,7 +253,7 @@ class SmartHomeScoreCard extends HTMLElement {
           <div class="shs-branding">
             <span>🏠 Smart Home Score</span>
           </div>
-          <span class="shs-badge-beta">Bêta v0.7.0-beta.2</span>
+          <span class="shs-badge-beta">Bêta v0.7.0-beta.3</span>
         </div>
 
         ${!hasData ? `
@@ -289,7 +310,7 @@ class SmartHomeScoreCard extends HTMLElement {
 
   _renderTabBody(isProvisional) {
     if (this._activeTab === 'domains') {
-      const getDom = (key) => this._hass?.states?.[`sensor.smart_home_score_${key}`]?.state ?? '—';
+      const getDom = (key) => this._getEntity(key)?.state ?? '—';
       return `
         <div class="shs-domain-grid">
           <div class="shs-domain-card"><div class="shs-domain-title">⚡ Électricité</div><div class="shs-domain-score">${getDom('elec_score')} / 100</div></div>
@@ -357,12 +378,22 @@ class SmartHomeScoreCard extends HTMLElement {
   }
 }
 
-customElements.define('smart-home-score-card', SmartHomeScoreCard);
+if (!customElements.get('smart-home-score-card')) {
+  customElements.define('smart-home-score-card', SmartHomeScoreCard);
+}
 
 window.customCards = window.customCards || [];
-window.customCards.push({
+const existingCardIdx = window.customCards.findIndex(c => c.type === 'smart-home-score-card');
+const cardEntry = {
   type: 'smart-home-score-card',
   name: 'Smart Home Score',
   preview: true,
   description: "Indice de maturité et plan d'amélioration de votre maison connectée",
-});
+  documentationURL: 'https://github.com/nano2sillery/smart_home_score'
+};
+
+if (existingCardIdx >= 0) {
+  window.customCards[existingCardIdx] = cardEntry;
+} else {
+  window.customCards.push(cardEntry);
+}

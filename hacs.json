@@ -1,6 +1,5 @@
 {
   "name": "Smart Home Score",
   "render_readme": true,
-  "filename": "smart-home-score-card.js",
   "homeassistant": "2024.7.0"
 }

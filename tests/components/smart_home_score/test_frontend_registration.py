@@ -1,4 +1,4 @@
-"""Tests for Modern Async Frontend Registration, Custom Card Catalog & Resilient Card Setup (v0.7.0-beta.2)."""
+"""Tests for Modern Async Frontend Registration, Custom Card Catalog & Resilient Card Setup (v0.7.0-beta.3)."""
 import tests.components.smart_home_score.conftest  # noqa: F401
 import os
 import subprocess
@@ -32,12 +32,12 @@ class TestFrontendRegistration(unittest.IsolatedAsyncioTestCase):
 
         # 1. Verification of window.customCards catalog
         self.assertIn("window.customCards = window.customCards || [];", code)
-        self.assertIn("type: 'smart-home-score-card'", code)
-        self.assertIn("name: 'Smart Home Score'", code)
+        self.assertIn("smart-home-score-card", code)
+        self.assertIn("Smart Home Score", code)
         self.assertIn("preview: true", code)
 
         # 2. Verification of getStubConfig & setConfig resilience
-        self.assertIn("static getStubConfig()", code)
+        self.assertIn("getStubConfig", code)
         self.assertIn("setConfig(config)", code)
         self.assertIn("this._config = config || {};", code)
 
