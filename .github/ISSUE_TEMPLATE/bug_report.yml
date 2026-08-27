@@ -1,0 +1,27 @@
+name: 🐞 Rapport de Bug
+description: Signalez un comportement inattendu ou un dysfonctionnement de l'intégration
+labels: ["bug", "beta"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Signalez un problème rencontré pendant la bêta communautaire.
+  - type: input
+    id: ha_version
+    attributes:
+      label: Version de Home Assistant
+      placeholder: "ex: 2026.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description du problème
+      description: Décrivez précisément ce qui s'est produit.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs Home Assistant (anonymisés)
+      render: shell

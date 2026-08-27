@@ -1,0 +1,31 @@
+{
+  "description": "Maison avec réseau Zigbee dense (60+ appareils), éclairage, ouvrants et capteurs locaux.",
+  "total_entities": 210,
+  "total_devices": 65,
+  "total_areas": 8,
+  "integrations_present": [
+    "zha",
+    "backup",
+    "met",
+    "shopping_list"
+  ],
+  "local_integrations": [
+    "zha",
+    "backup"
+  ],
+  "cloud_integrations": [
+    "met"
+  ],
+  "lights_count": 28,
+  "covers_count": 10,
+  "binary_sensors_count": 35,
+  "sensors_count": 55,
+  "automations_count": 42,
+  "scripts_count": 8,
+  "has_zigbee": true,
+  "zigbee_devices_count": 65,
+  "has_solar_production": false,
+  "has_water_leak_sensors": true,
+  "water_leak_sensors_count": 4,
+  "has_ups_monitoring": false
+}

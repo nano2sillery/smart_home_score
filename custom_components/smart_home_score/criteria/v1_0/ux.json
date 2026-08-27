@@ -1,0 +1,222 @@
+[
+  {
+    "id": "UX01",
+    "domain": "UX",
+    "name": "Commandes physiques intuitives",
+    "description": "L'utilisation quotidienne des fonctions de base ne nécessite pas de sortir son smartphone : boutons physiques intuitifs et télécommandes accessibles dans chaque pièce.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Obligation de sortir son smartphone ou d'ouvrir l'application pour la moindre action (allumer une lumière, ouvrir un volet).",
+      "1": "Boutons physiques présents dans moins de la moitié des pièces.",
+      "2": "Boutons physiques présents pour les lumières mais pas pour les volets ou le chauffage.",
+      "3": "Boutons et interrupteurs intuitifs présents dans 100 % des pièces pour les usages fréquents.",
+      "4": "Ergonomie physique parfaite : boutons muraux clairs avec sérigraphie ou retour visuel, télécommandes d'ambiance et aucune friction pour les invités."
+    },
+    "question": "Les membres du foyer et les invités peuvent-ils utiliser les lumières et volets sans jamais avoir besoin d'un smartphone ?",
+    "test_procedure": "1. Demander à un invité ou enfant d'allumer la pièce ou fermer un volet sans lui donner de smartphone.\n2. Vérifier que l'action est immédiatement évidente et réussie.",
+    "recommendations": {
+      "0_to_1": "Remplacer les commandes 100% smartphone par des boutons physiques sans fil ou câblés dans les pièces clés.",
+      "1_to_2": "Équiper le salon et les chambres de commandes murales intuitives.",
+      "2_to_3": "Assurer que chaque pièce de vie dispose d'un interrupteur physique à l'entrée.",
+      "3_to_4": "Étiqueter discrètement ou programmer des retours haptiques/lumineux sur les télécommandes multifonctions."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Validation humaine de l'ergonomie -> QUESTION_REQUIRED."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "UX02",
+    "domain": "UX",
+    "name": "Dashboard famille",
+    "description": "Présence d'une interface Lovelace épurée, claire et simplifiée spécialement conçue pour les membres du foyer et les invités (tablette murale ou vue mobile).",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Aucun dashboard adapté : seulement la vue brute par défaut avec des centaines d'entités techniques illisibles.",
+      "1": "Dashboard technique personnalisé mais trop complexe pour les personnes non initiées.",
+      "2": "Dashboard simplifié existant mais incomplet ou encombré d'informations techniques.",
+      "3": "Dashboard famille épuré et intuitif offrant un accès direct aux 10 actions indispensables du quotidien.",
+      "4": "Interface d'excellence : design épuré, adapté aux enfants et conjoints, avec vue tablette murale (kiosk mode) et profils sur-mesure."
+    },
+    "question": "Votre famille dispose-t-elle d'un dashboard épuré et simple d'utilisation au quotidien ?",
+    "test_procedure": "1. Ouvrir le dashboard principal sur une tablette ou smartphone familial.\n2. Vérifier que les actions utiles (lumières pièce par pièce, température, volets) sont accessibles en 1 clic.",
+    "recommendations": {
+      "0_to_1": "Créer un nouveau tableau de bord Lovelace dédié à la famille distinct du dashboard d'administration.",
+      "1_to_2": "Utiliser des cartes modernes (Mushroom cards ou Tile cards) avec de grandes icônes claires.",
+      "2_to_3": "Masquer les informations techniques (adresses IP, batteries, signaux LQI) du dashboard familial.",
+      "3_to_4": "Installer une tablette murale avec Kiosk Mode pour un accès permanent dans la pièce de vie."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Validation de l'interface utilisateur -> QUESTION_REQUIRED."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "UX03",
+    "domain": "UX",
+    "name": "Adaptation aux appareils",
+    "description": "Les tableaux de bord sont responsifs et parfaitement lisibles sur smartphone, tablette murale et écran d'ordinateur.",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Dashboard illisible sur mobile (éléments coupés, colonnes trop étroites, scroll horizontal).",
+      "1": "Dashboard conçu pour grand écran uniquement, navigation difficile sur smartphone.",
+      "2": "Lisible sur smartphone mais non optimisé pour tablette (grands espaces vides).",
+      "3": "Vues responsives adaptées : navigation fluide sur smartphone et disposition claire sur tablette/PC.",
+      "4": "Adaptation multi-terminaux exemplaire : vues dédiées pour mobile (`ui-lovelace-smartphone`), tablette murale (`ui-lovelace-ipad`) et console de pilotage grand écran."
+    },
+    "question": "Vos dashboards s'affichent-ils confortablement sur smartphone comme sur tablette sans déformation ?",
+    "test_procedure": "1. Ouvrir Home Assistant sur smartphone, puis sur tablette ou PC.\n2. Vérifier que la mise en page s'adapte harmonieusement à la largeur de l'écran.",
+    "recommendations": {
+      "0_to_1": "Organiser les cartes en sections ou grilles responsives natives de Home Assistant.",
+      "1_to_2": "Créer une vue spécifique optimisée pour les smartphones avec navigation par onglets bas.",
+      "2_to_3": "Utiliser `custom:grid-layout` ou les nouvelles vues Sections pour gérer les résolutions d'écran.",
+      "3_to_4": "Définir des tableaux de bord séparés pour mobile et pour écran mural partagé."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [
+        "frontend"
+      ],
+      "description": "Présence de dashboards personnalisés dans la configuration Lovelace."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "UX04",
+    "domain": "UX",
+    "name": "Notifications pertinentes",
+    "description": "Les notifications envoyées sont utiles, ciblées, hiérarchisées et évitent tout spam d'alertes inutiles.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Spam quotidien de notifications futiles ou au contraire aucune alerte configurée.",
+      "1": "Nombreuses notifications non actionnables reçues à toute heure y compris la nuit.",
+      "2": "Notifications utiles mais sans distinction d'urgence (les alertes de sécurité sont traitées comme des infos météo).",
+      "3": "Notifications ciblées : alertes critiques prioritaires sur les smartphones concernés et filtrage des notifications nocturnes.",
+      "4": "Système de notification exemplaire : canaux hiérarchisés (WhatsApp, push critique avec son personnalisé), messages actionnables avec boutons d'action directs."
+    },
+    "question": "Vos notifications domotiques sont-elles utiles, ciblées et sans spam intempestif ?",
+    "test_procedure": "1. Vérifier l'historique des notifications reçues sur les 7 derniers jours : chaque notification avait-elle une utilité réelle ?",
+    "recommendations": {
+      "0_to_1": "Supprimer les notifications d'information non critiques (ex: allumage de lumière).",
+      "1_to_2": "Créer des notifications pour les événements de sécurité (fuite d'eau, porte restée ouverte).",
+      "2_to_3": "Ajouter des boutons d'action directement dans la notification (ex: 'Fermer le volet', 'Couper la vanne').",
+      "3_to_4": "Configurer les notifications critiques (critical push) pour contourner le mode silencieux uniquement en cas d'urgence absolue."
+    },
+    "auto_requirements": {
+      "entities": [
+        "notify.*"
+      ],
+      "integrations": [
+        "notify"
+      ],
+      "description": "Présence de services et automatisations de notification."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "UX05",
+    "domain": "UX",
+    "name": "Automatisations discrètes",
+    "description": "Les automatisations améliorent le confort de façon transparente et silencieuse sans contraindre ni surprendre les occupants.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "La domotique est intrusive et agaçante : lumières qui s'éteignent sur les personnes immobiles, annonces vocales inopportunes.",
+      "1": "Frustrations régulières exprimées par les membres du foyer sur certains automatismes imprévisibles.",
+      "2": "Automatisations généralement acceptées mais quelques frictions résiduelles lors des changements d'habitudes.",
+      "3": "Domotique fluide et discrète : les automatisations anticipent les besoins sans jamais imposer d'actions contraignantes.",
+      "4": "Discrétion totale (technologie invisible) : la maison réagit naturellement, adoption et satisfaction unanimes de tous les membres du foyer et invités."
+    },
+    "question": "Votre domotique est-elle discrète et naturelle pour tous les habitants (pas d'extinctions inopportunes ni de surprises) ?",
+    "test_procedure": "1. Demander aux personnes vivant dans la maison si des automatisations les dérangent au quotidien.",
+    "recommendations": {
+      "0_to_1": "Désactiver temporairement les automatisations sources d'agacement pour le foyer.",
+      "1_to_2": "Augmenter les temporisations d'extinction des détecteurs de mouvement (passer de 1 min à 5 min).",
+      "2_to_3": "Remplacer les annonces vocales non indispensables par des alertes visuelles discrètes (bandeau LED).",
+      "3_to_4": "Installer des capteurs de présence radar (mmWave) pour maintenir la lumière lors des périodes de lecture immobile."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Évaluation humaine de la satisfaction -> QUESTION_REQUIRED."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "UX06",
+    "domain": "UX",
+    "name": "Override utilisateur",
+    "description": "L'utilisateur peut facilement reprendre la main manuellement sur une automatisation (la commande manuelle reste toujours prioritaire sur l'automatisme).",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "L'automatisation lutte contre l'utilisateur (ex: l'utilisateur éteint la lumière, l'automatisme la rallume 5 secondes plus tard).",
+      "1": "Reprise en main manuelle difficile ou nécessitant d'aller désactiver une automatisation dans les paramètres.",
+      "2": "Priorité manuelle gérée mais temporaire sans possibilité de forçage prolongé.",
+      "3": "Override intuitif : tout appui manuel sur un bouton suspend l'automatisme pendant une durée définie ou jusqu'au prochain cycle.",
+      "4": "Gestion de priorité exemplaire : statut manuel immédiatement respecté, bouton de suspension facile et reprise automatique transparente."
+    },
+    "question": "Si vous modifiez manuellement un volet ou une lumière, Home Assistant respecte-t-il votre choix sans forcer son automatisme ?",
+    "test_procedure": "1. Éteindre manuellement une lumière gérée par un détecteur de mouvement.\n2. Vérifier que la lumière ne se rallume pas immédiatement tant qu'on n'a pas quitté la pièce.",
+    "recommendations": {
+      "0_to_1": "Modifier les automatisations pour qu'un ordre manuel bloque le réenclenchement automatique immédiat.",
+      "1_to_2": "Ajouter une condition 'Si la lumière a été éteinte manuellement il y a moins de 5 min, ne pas rallumer'.",
+      "2_to_3": "Créer un interrupteur virtuel (helper boolean) 'Mode Automatique' désactivable d'un simple clic.",
+      "3_to_4": "Généraliser la règle d'or domotique : 'L'humain a toujours le dernier mot sur l'algorithme'."
+    },
+    "auto_requirements": {
+      "entities": [
+        "input_boolean.*"
+      ],
+      "integrations": [
+        "automation"
+      ],
+      "description": "Présence de mécanismes de bypass/override."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "UX07",
+    "domain": "UX",
+    "name": "Réactivité du système",
+    "description": "Les principales actions domotiques (appui sur interrupteur, déclenchement de scène) offrent un temps de réponse instantané et prévisible (< 300 ms).",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Latences très lentes et imprévisibles (> 2 secondes) à chaque appui bouton.",
+      "1": "Latences perceptibles (1 à 2 secondes) dues à des allers-retours vers des serveurs cloud distants.",
+      "2": "Temps de réponse correct (500 ms à 1s) mais variable selon la charge de la box.",
+      "3": "Réponse rapide et fluide (< 300 ms) sur la totalité des commandes locales.",
+      "4": "Réactivité instantanée imperceptible (< 150 ms) : sensation identique à un câblage électrique traditionnel."
+    },
+    "question": "Lorsque vous appuyez sur un bouton, l'allumage ou l'action se produit-elle instantanément (< 300ms) ?",
+    "test_procedure": "1. Appuyer sur un interrupteur sans fil ou une télécommande.\n2. Chronométrer le délai d'allumage de l'ampoule (doit être quasi-instantané).",
+    "recommendations": {
+      "0_to_1": "Migrer les commandes d'éclairage dépendant du Wi-Fi cloud vers des protocoles locaux (Zigbee, Matter).",
+      "1_to_2": "Optimiser le maillage Zigbee pour réduire le nombre de sauts de routage inutiles.",
+      "2_to_3": "Vérifier la charge CPU et la mémoire du serveur Home Assistant.",
+      "3_to_4": "Utiliser le 'Direct Binding' Zigbee pour supprimer tout temps de transit par le coordinateur."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Mesure subjective de la réactivité -> QUESTION_REQUIRED."
+    },
+    "model_version": "1.0"
+  }
+]

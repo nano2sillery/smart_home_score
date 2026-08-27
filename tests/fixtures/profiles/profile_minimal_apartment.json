@@ -1,0 +1,27 @@
+{
+  "description": "Petit appartement avec quelques lumières et capteurs basiques sans solaire ni onduleur.",
+  "total_entities": 45,
+  "total_devices": 12,
+  "total_areas": 3,
+  "integrations_present": [
+    "hue",
+    "backup"
+  ],
+  "local_integrations": [
+    "hue",
+    "backup"
+  ],
+  "cloud_integrations": [],
+  "lights_count": 8,
+  "switches_count": 2,
+  "binary_sensors_count": 4,
+  "sensors_count": 10,
+  "automations_count": 3,
+  "scripts_count": 1,
+  "has_zigbee": true,
+  "zigbee_devices_count": 10,
+  "has_solar_production": false,
+  "has_water_meter": false,
+  "has_connected_valve": false,
+  "has_ups_monitoring": false
+}

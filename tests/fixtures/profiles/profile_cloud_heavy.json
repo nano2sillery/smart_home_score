@@ -1,0 +1,30 @@
+{
+  "description": "Installation reposant majoritairement sur des clouds propriétaires (Tuya, Smart Life, Netatmo).",
+  "total_entities": 110,
+  "total_devices": 35,
+  "total_areas": 5,
+  "integrations_present": [
+    "tuya",
+    "netatmo",
+    "somfy",
+    "alexa",
+    "backup"
+  ],
+  "local_integrations": [
+    "backup"
+  ],
+  "cloud_integrations": [
+    "tuya",
+    "netatmo",
+    "somfy",
+    "alexa"
+  ],
+  "lights_count": 15,
+  "covers_count": 6,
+  "climates_count": 4,
+  "sensors_count": 30,
+  "automations_count": 14,
+  "has_zigbee": false,
+  "has_solar_production": false,
+  "has_ups_monitoring": false
+}

@@ -1,0 +1,62 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Smart Home Score",
+        "description": "Voulez-vous initialiser l'audit Smart Home Score pour votre installation Home Assistant ?"
+      }
+    },
+    "abort": {
+      "already_configured": "Smart Home Score est déjà configuré sur cette instance Home Assistant."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "global_score": {
+        "name": "Score Global"
+      },
+      "completeness": {
+        "name": "Complétude de l'Audit"
+      },
+      "evaluated_criteria": {
+        "name": "Critères Évalués"
+      },
+      "engine_version": {
+        "name": "Version du Moteur"
+      },
+      "maturity_level": {
+        "name": "Niveau de Maturité"
+      },
+      "critical_risks": {
+        "name": "Risques Critiques"
+      },
+      "potential_gain": {
+        "name": "Potentiel d'Amélioration"
+      },
+      "elec_score": {
+        "name": "Score Sécurité Électrique"
+      },
+      "cyber_score": {
+        "name": "Score Cybersécurité"
+      },
+      "res_score": {
+        "name": "Score Résilience"
+      },
+      "auto_score": {
+        "name": "Score Automatisations"
+      },
+      "ener_score": {
+        "name": "Score Énergie"
+      },
+      "inter_score": {
+        "name": "Score Interopérabilité"
+      },
+      "ux_score": {
+        "name": "Score Confort & UX"
+      },
+      "maint_score": {
+        "name": "Score Maintenance"
+      }
+    }
+  }
+}

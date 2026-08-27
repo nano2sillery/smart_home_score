@@ -1,0 +1,85 @@
+name: Smart Home Score CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate-and-test:
+    name: Lint, Criteria Integrity & Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Test Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest pytest-asyncio
+
+      - name: Lint Code
+        run: |
+          flake8 custom_components/smart_home_score --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Validate Criteria JSON Schema & Weights Integrity
+        run: |
+          python -c "
+          import os, json
+          base_path = 'custom_components/smart_home_score/criteria/v1_0'
+          assert os.path.exists(base_path), 'Criteria directory v1_0 missing'
+          files = [f for f in os.listdir(base_path) if f.endswith('.json')]
+          total_criteria = 0
+          domain_weights = {}
+          for f in sorted(files):
+              with open(os.path.join(base_path, f), 'r') as fp:
+                  data = json.load(fp)
+                  for c in data:
+                      total_criteria += 1
+                      d = c['domain']
+                      domain_weights[d] = domain_weights.get(d, 0) + c['weight']
+          assert total_criteria == 59, f'Expected 59 criteria, found {total_criteria}'
+          for d, w in domain_weights.items():
+              assert w == 100, f'Domain {d} internal weights sum to {w} instead of 100'
+          print('✅ Integrity check: Exactly 59 criteria, internal weights sum to 100% per domain!')
+          "
+
+      - name: Run Full Test Suite
+        run: |
+          python -c "
+          import unittest
+          loader = unittest.TestLoader()
+          suite = loader.discover('tests/components/smart_home_score', pattern='test_*.py')
+          runner = unittest.TextTestRunner(verbosity=2)
+          res = runner.run(suite)
+          assert res.wasSuccessful(), 'Unit tests failed'
+          print(f'🎉 All {res.testsRun} tests passed successfully!')
+          "
+
+  hacs-validation:
+    name: HACS Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: HACS Action
+        uses: hacs/action@main
+        with:
+          category: integration
+
+  hassfest:
+    name: Home Assistant Hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Hassfest Validation
+        uses: home-assistant/actions/hassfest@master

@@ -1,0 +1,34 @@
+{
+  "description": "Maison avec centrale photovoltaïque, batterie de stockage, compteur d'eau et onduleur UPS.",
+  "total_entities": 280,
+  "total_devices": 75,
+  "total_areas": 9,
+  "integrations_present": [
+    "enphase_envoy",
+    "nut",
+    "mqtt",
+    "esphome",
+    "backup"
+  ],
+  "local_integrations": [
+    "enphase_envoy",
+    "nut",
+    "mqtt",
+    "esphome",
+    "backup"
+  ],
+  "cloud_integrations": [],
+  "lights_count": 32,
+  "covers_count": 12,
+  "sensors_count": 95,
+  "automations_count": 60,
+  "has_mqtt": true,
+  "has_esphome": true,
+  "has_solar_production": true,
+  "solar_power_entity": "sensor.envoy_solar_power",
+  "has_grid_power_realtime": true,
+  "has_grid_energy_total": true,
+  "has_water_meter": true,
+  "has_connected_valve": true,
+  "has_ups_monitoring": true
+}

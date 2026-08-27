@@ -1,0 +1,317 @@
+[
+  {
+    "id": "ENER01",
+    "domain": "ENER",
+    "name": "Consommation électrique globale",
+    "description": "Mesure en temps réel de la consommation électrique globale du logement (téléinformation Linky TIC, tore de mesure au disjoncteur général, pince ampèremétrique).",
+    "weight": 12,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Aucune mesure de consommation électrique dans Home Assistant.",
+      "1": "Relevé manuel occasionnel d'index ou synchronisation cloud décalée de 24 heures (ex: index Enedis journalier seul).",
+      "2": "Mesure instantanée de la puissance mais sans intégration continue dans l'énergie.",
+      "3": "Mesure en temps réel (< 1 minute) de la puissance active (W) et de l'énergie totale (kWh) intégrée dans Home Assistant.",
+      "4": "Mesure haute précision en temps réel : téléinformation Linky TIC complète (puissance apparente, intensité par phase, dépassement de puissance, index tarifaires)."
+    },
+    "question": "Avez-vous une mesure en direct de la puissance consommée par toute la maison (module Linky TIC ou pince au tableau) ?",
+    "test_procedure": "1. Allumer un gros appareil (bouilloire, four).\n2. Constater dans les 5 secondes la hausse correspondante sur le capteur de puissance globale dans Home Assistant.",
+    "recommendations": {
+      "0_to_1": "Installer un module de téléinformation Linky (ex: ZLinky_TIC Zigbee, LiXee ou TIC ESPHome) sur le compteur Linky.",
+      "1_to_2": "À défaut de Linky accessible, poser une pince ampèremétrique de mesure globale au tableau électrique.",
+      "2_to_3": "Configurer le capteur d'énergie totale consommée dans Home Assistant.",
+      "3_to_4": "Activer la transmission temps réel des données TIC complètes (tension, cos phi, intensité max)."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*linky*",
+        "sensor.*grid_power*",
+        "sensor.*energy*"
+      ],
+      "integrations": [
+        "energy"
+      ],
+      "description": "Capteur de réseau électrique principal."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "ENER02",
+    "domain": "ENER",
+    "name": "Historique énergétique",
+    "description": "Conservation et exploitation d'un historique journalier, mensuel et annuel complet dans le tableau de bord Énergie natif de Home Assistant.",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Le tableau de bord Énergie de Home Assistant n'est pas configuré.",
+      "1": "Tableau de bord Énergie configuré depuis moins de 7 jours, historique insuffisant.",
+      "2": "Historique énergétique actif depuis plus d'un mois avec suivi du réseau électrique.",
+      "3": "Dashboard Énergie complet : historique sur plusieurs mois, comparatifs annuels et coûts configurés.",
+      "4": "Historique énergétique multi-sources exemplaire : réseau, production solaire, eau, gaz et sous-comptage avec conservation des statistiques à long terme."
+    },
+    "question": "Votre tableau de bord Énergie natif dans Home Assistant est-il configuré et alimenté par vos capteurs ?",
+    "test_procedure": "1. Ouvrir le menu 'Énergie' dans Home Assistant.\n2. Vérifier que les graphiques de consommation et de coûts sont peuplés et navigables par jour/mois/année.",
+    "recommendations": {
+      "0_to_1": "Renseigner votre capteur d'importation réseau dans Paramètres → Tableaux de bord → Énergie.",
+      "1_to_2": "Vérifier quotidiennement l'absence d'erreurs de statistiques à long terme dans l'onglet Outils de développement.",
+      "2_to_3": "Ajouter les sources de production solaire et de sous-comptage dans le tableau de bord Énergie.",
+      "3_to_4": "Exploiter les rapports mensuels pour identifier les évolutions d'une année sur l'autre."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*energy*"
+      ],
+      "integrations": [
+        "energy"
+      ],
+      "description": "Configuration active du dashboard Energy natif."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "ENER03",
+    "domain": "ENER",
+    "name": "Mesure des principaux usages",
+    "description": "Sous-comptage individuel des consommateurs significatifs de la maison (chauffe-eau, chauffage, pompe à chaleur, électroménager, recharge VE).",
+    "weight": 12,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Aucun sous-comptage : seule la consommation globale est connue.",
+      "1": "1 à 2 appareils mesurés ponctuellement via prise connectée.",
+      "2": "3 à 5 gros consommateurs mesurés individuellement.",
+      "3": "6 à 15 appareils ou circuits mesurés individuellement représentant plus de 60 % de la consommation totale.",
+      "4": "Sous-comptage exhaustif : plus de 15 appareils mesurés (chauffe-eau, électroménager, multimédia, pompes, PAC) couvrant > 80 % du talon et des pics énergétiques."
+    },
+    "question": "Mesurez-vous la consommation de vos principaux appareils individuellement (chauffe-eau, lave-linge, réfrigérateur, multimédia) ?",
+    "test_procedure": "1. Aller dans le tableau de bord Énergie → section 'Appareils individuels'.\n2. Compter le nombre d'équipements suivis avec un capteur d'énergie dédié.",
+    "recommendations": {
+      "0_to_1": "Placer une prise connectée de mesure sur le réfrigérateur ou le lave-linge.",
+      "1_to_2": "Ajouter des modules de mesure sur les 3 plus gros postes de consommation du foyer.",
+      "2_to_3": "Équiper le chauffe-eau et les circuits de chauffage d'un tore de mesure au tableau électrique.",
+      "3_to_4": "Intégrer l'ensemble des gros appareils dans la section sous-comptage du dashboard Énergie."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*_energy",
+        "sensor.*_power"
+      ],
+      "integrations": [
+        "energy"
+      ],
+      "description": "Comptage des capteurs d'énergie individuels déclarés dans Energy."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "ENER04",
+    "domain": "ENER",
+    "name": "Production locale",
+    "description": "Mesure en temps réel et historique de la production locale d'énergie (panneaux solaires photovoltaïques, micro-onduleurs ou éolien).",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Installation sans production locale déclarée (si panneaux présents : aucune mesure dans HA).",
+      "1": "Production solaire mesurée manuellement ou avec décalage de 24 heures.",
+      "2": "Production solaire instantanée (W) remontée dans Home Assistant.",
+      "3": "Production solaire complète (W et kWh) intégrée dans le tableau de bord Énergie avec calcul de l'autoconsommation.",
+      "4": "Suivi solaire haute précision : puissance instantanée panneau par panneau ou onduleur + prévisions de production solaire (Forecast.Solar) intégrées."
+    },
+    "question": "Si vous avez des panneaux solaires, leur production en direct et leur historique sont-ils intégrés dans Home Assistant ?",
+    "test_procedure": "1. Vérifier la présence d'une intégration solaire (Enphase, SolarEdge, Huawei, Hoymiles, Shelly EM) dans Home Assistant.\n2. Constater la courbe de production solaire dans le dashboard Énergie.",
+    "recommendations": {
+      "0_to_1": "Raccorder la passerelle de votre onduleur ou poser un tore de mesure sur l'injection solaire.",
+      "1_to_2": "Déclarer la production solaire dans la section 'Panneaux solaires' du dashboard Énergie.",
+      "2_to_3": "Installer l'intégration Forecast.Solar pour anticiper la production des prochaines 48 heures.",
+      "3_to_4": "Mettre en place un suivi par panneau pour détecter immédiatement tout panneau défaillant ou encrassé."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*solar*",
+        "sensor.*photovoltaic*",
+        "sensor.*production*"
+      ],
+      "integrations": [
+        "energy"
+      ],
+      "description": "Entités solaires déclarées dans le dashboard Énergie."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "ENER05",
+    "domain": "ENER",
+    "name": "Tarification",
+    "description": "Home Assistant connaît les plages horaires, tarifs d'électricité et contrats dynamiques (Heures Pleines / Heures Creuses, Tempo, Spot, RTE).",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Aucune information tarifaire dans Home Assistant, coût de l'énergie inconnu.",
+      "1": "Tarif fixe moyen renseigné dans les paramètres du dashboard Énergie.",
+      "2": "Double tarif Heures Pleines / Heures Creuses renseigné manuellement.",
+      "3": "Tarification dynamique active (Tempo Bleu/Blanc/Rouge, RTE EcoWatt ou tarifs HP/HC automatiques via Linky).",
+      "4": "Tarification prédictive complète : prévision des tarifs du lendemain (Tempo J+1, Spot NordPool / EPEX Spot), entités de coûts et calcul des économies réalisées."
+    },
+    "question": "Home Assistant connaît-il votre contrat d'électricité (Heures Creuses, Tempo, tarif dynamique) pour calculer vos coûts ?",
+    "test_procedure": "1. Vérifier la présence du capteur de tarif ou de la couleur Tempo du jour et du lendemain.\n2. Vérifier que les entités de coût monétaire (€) sont calculées dans le dashboard Énergie.",
+    "recommendations": {
+      "0_to_1": "Renseigner le prix du kWh de votre contrat dans les paramètres du tableau de bord Énergie.",
+      "1_to_2": "Configurer les entités de tarifs Heures Pleines et Heures Creuses.",
+      "2_to_3": "Installer l'intégration RTE EcoWatt ou Tempo pour anticiper les jours de pointe.",
+      "3_to_4": "Associer les capteurs de prix dynamiques aux automatisations de pilotage des gros consommateurs."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*tempo*",
+        "sensor.*tariff*",
+        "sensor.*ecowatt*"
+      ],
+      "integrations": [],
+      "description": "Capteurs de tarifs et entités financières."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "ENER06",
+    "domain": "ENER",
+    "name": "Optimisation automatique",
+    "description": "Déplacement automatique des gros consommateurs (chauffe-eau, recharge, électroménager) vers les périodes énergétiquement intéressantes (heures creuses, surplus solaire).",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Aucune optimisation : les appareils démarrent à n'importe quel moment sans synchronisation énergétique.",
+      "1": "Informations tarifaires disponibles mais sans aucun pilotage automatisé des appareils.",
+      "2": "Optimisation fixe classique (ex: contacteur physique heures creuses sur le chauffe-eau).",
+      "3": "Home Assistant pilote automatiquement au moins un gros consommateur selon les tarifs ou plages horaires creuses.",
+      "4": "Optimisation énergétique dynamique multi-sources : modulation de la puissance de chauffe-eau ou recharge selon le surplus solaire instantané + repli heures creuses."
+    },
+    "question": "Home Assistant déclenche-t-il automatiquement votre chauffe-eau, recharge ou gros appareils pendant les heures creuses ou le surplus solaire ?",
+    "test_procedure": "1. Vérifier la présence d'une automatisation pilotant le chauffe-eau ou la recharge VE selon la couleur du jour Tempo ou l'excédent de production solaire.",
+    "recommendations": {
+      "0_to_1": "Connecter le contacteur du chauffe-eau à Home Assistant à l'aide d'un micromodule.",
+      "1_to_2": "Programmer le déclenchement des appareils énergivores pendant les heures creuses.",
+      "2_to_3": "Créer une automatisation enclenchant le chauffe-eau ou la recharge dès que le surplus solaire dépasse 1000W.",
+      "3_to_4": "Installer un routeur solaire électronique avec gradateur de puissance pour absorber 100% du surplus watt par watt."
+    },
+    "auto_requirements": {
+      "entities": [
+        "switch.*water_heater*",
+        "switch.*chauffe_eau*"
+      ],
+      "integrations": [
+        "automation"
+      ],
+      "description": "Automatisations d'optimisation énergétique."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "ENER07",
+    "domain": "ENER",
+    "name": "Autoconsommation",
+    "description": "Optimisation du taux d'autoconsommation solaire locale (routeur solaire, batterie domestique, délestage dynamique).",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Taux d'autoconsommation non mesuré ou réinjection solaire totale sans autoconsommation.",
+      "1": "Autoconsommation passive sans pilotage (taux < 40 %).",
+      "2": "Autoconsommation mesurée dans Home Assistant avec décalage manuel des usages en journée.",
+      "3": "Optimisation active par seuils : pilotage d'appareils atteignant un taux d'autoconsommation > 60 %.",
+      "4": "Autoconsommation optimisée d'excellence (> 80 %) : routeur solaire dynamique (dimmer proportionnel) ou stockage batterie avec zéro réinjection non valorisée."
+    },
+    "question": "Avez-vous mis en place un dispositif actif (routeur solaire, batterie ou automatisme dynamique) pour consommer toute votre électricité solaire ?",
+    "test_procedure": "1. Consulter le taux d'autoconsommation dans le dashboard Énergie lors des journées ensoleillées.\n2. Vérifier que la réinjection réseau reste minimale pendant les pics de production.",
+    "recommendations": {
+      "0_to_1": "Mesurer le taux d'autoconsommation dans le tableau de bord Énergie.",
+      "1_to_2": "Décaler le fonctionnement du lave-linge et lave-vaisselle entre 12h et 16h.",
+      "2_to_3": "Automatiser l'allumage des charges secondaires (filtration piscine, déshumidificateur) sur surplus solaire.",
+      "3_to_4": "Installer un routeur solaire proportionnel piloté en PWM pour chauffer l'eau chaude sanitaire avec le surplus."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*autoconsommation*",
+        "sensor.*self_consumption*"
+      ],
+      "integrations": [
+        "energy"
+      ],
+      "description": "Entités d'autoconsommation."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "ENER08",
+    "domain": "ENER",
+    "name": "Eau",
+    "description": "Mesure en temps réel, historique de consommation d'eau et intégration dans Home Assistant.",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Aucune mesure de consommation d'eau dans Home Assistant.",
+      "1": "Saisie manuelle occasionnelle d'index de compteur.",
+      "2": "Capteur de présence de débit sans mesure volumétrique précise.",
+      "3": "Compteur d'eau à impulsion ou capteur de débit connecté mesurant les litres et m³ dans Home Assistant.",
+      "4": "Gestion complète de l'eau : compteur d'eau haute précision dans le dashboard Énergie, historique quotidien, coût de l'eau et sous-comptage arrosage/sanitaire."
+    },
+    "question": "Votre consommation d'eau (en litres ou m³) est-elle suivie en direct dans Home Assistant ?",
+    "test_procedure": "1. Ouvrir un robinet pendant 1 minute.\n2. Vérifier l'incrémentation du capteur d'eau dans Home Assistant et dans le tableau de bord Énergie.",
+    "recommendations": {
+      "0_to_1": "Poser un capteur à impulsion ou capteur inductif sur le compteur d'eau principal.",
+      "1_to_2": "Raccorder le capteur à un module ESPHome ou Zigbee pour transmettre les impulsions à Home Assistant.",
+      "2_to_3": "Déclarer le capteur d'eau dans la section 'Eau' du tableau de bord Énergie de Home Assistant.",
+      "3_to_4": "Ajouter un compteur d'eau divisionnaire sur le circuit d'arrosage extérieur pour séparer les usages."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*water*",
+        "sensor.*eau*"
+      ],
+      "integrations": [
+        "energy"
+      ],
+      "description": "Capteurs de consommation d'eau déclarés dans Energy."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "ENER09",
+    "domain": "ENER",
+    "name": "Détection des anomalies énergétiques",
+    "description": "Détection automatique des surconsommations électriques anormales (talon de veille excessif, appareil resté allumé) et des fuites d'eau continues.",
+    "weight": 11,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Aucune alerte sur les consommations anormales.",
+      "1": "Constat visuel des anomalies lors de la consultation manuelle des graphiques.",
+      "2": "Alerte de puissance maximale (ex: notification si puissance totale > 9000W pour éviter la disjonction).",
+      "3": "Alertes sur anomalies régulières : détection d'un talon de veille anormalement élevé ou d'un appareil allumé anormalement longtemps.",
+      "4": "Supervision prédictive complète : détection automatique de fuite d'eau par débit nocturne continu + notification d'anomalie de puissance sur équipement vital (ex: congélateur défaillant)."
+    },
+    "question": "Recevez-vous une alerte si un appareil consomme anormalement longtemps ou si un écoulement d'eau continu est détecté la nuit ?",
+    "test_procedure": "1. Vérifier la présence d'une automatisation alertant sur une consommation d'eau continue > 30 minutes sans interruption.",
+    "recommendations": {
+      "0_to_1": "Créer une alerte de dépassement de puissance souscrite Linky pour éviter les disjonctions.",
+      "1_to_2": "Mesurer et surveiller le talon de consommation électrique nocturne de la maison.",
+      "2_to_3": "Créer une automatisation déclenchée si un débit d'eau permanent est détecté entre 2h et 5h du matin.",
+      "3_to_4": "Ajouter une alerte sur la puissance du réfrigérateur/congélateur si le compresseur ne s'arrête jamais."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*power*",
+        "sensor.*water*"
+      ],
+      "integrations": [
+        "automation"
+      ],
+      "description": "Automatisations de détection d'anomalie de consommation."
+    },
+    "model_version": "1.0"
+  }
+]

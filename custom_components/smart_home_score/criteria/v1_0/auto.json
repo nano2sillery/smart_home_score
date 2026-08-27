@@ -1,0 +1,322 @@
+[
+  {
+    "id": "AUTO01",
+    "domain": "AUTO",
+    "name": "Éclairage intelligent",
+    "description": "Scénarios d'éclairage automatisés tenant compte du contexte réel : présence, horaire, luminosité ambiante, mode nuit ou pièce occupée.",
+    "weight": 12,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Aucune automatisation d'éclairage : allumage et extinction 100% manuels.",
+      "1": "Minuteries ou programmations horaires fixes rigides (ex: allumage à 19h tous les jours sans capteur).",
+      "2": "Détecteurs de mouvement basiques dans les pièces de passage (couloir/WC) allumant à 100% quelle que soit l'heure.",
+      "3": "Éclairages contextualisés : détection de mouvement couplée à la luminosité extérieure et variation douce selon le mode nuit/jour.",
+      "4": "Éclairage intelligent complet : allumage progressif, scènes adaptatives selon l'activité (cinéma, repas, sommeil), extinction automatique après départ."
+    },
+    "question": "Vos éclairages s'adaptent-ils automatiquement au niveau de lumière naturelle et à vos activités (mode nuit tamisé, extinction sur absence) ?",
+    "test_procedure": "1. Entrer dans une pièce de passage en pleine nuit pour vérifier l'allumage tamisé.\n2. Vérifier que la lumière ne s'allume pas en plein soleil.",
+    "recommendations": {
+      "0_to_1": "Installer un premier détecteur de mouvement dans un couloir ou dressing.",
+      "1_to_2": "Conditionner l'allumage automatique au capteur de luminosité ou au coucher du soleil.",
+      "2_to_3": "Créer une règle d'éclairage nocturne tamisé (ex: 15% de luminosité entre 23h et 7h).",
+      "3_to_4": "Ajouter des scènes dynamiques liées aux modes de vie de la maison (travail, détente, film)."
+    },
+    "auto_requirements": {
+      "entities": [
+        "light.*",
+        "binary_sensor.*motion*",
+        "binary_sensor.*occupancy*"
+      ],
+      "integrations": [
+        "automation"
+      ],
+      "description": "Présence d'automatisations liant détection et éclairage."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "AUTO02",
+    "domain": "AUTO",
+    "name": "Chauffage intelligent",
+    "description": "Régulation thermique intelligente dépendant du besoin réel, des plannings familiaux, de la présence et de l'ouverture des fenêtres.",
+    "weight": 12,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Chauffage non connecté ou consigne fixe continue sans programmation.",
+      "1": "Thermostat programmable avec simple calendrier hebdomadaire fixe.",
+      "2": "Thermostats connectés pilotés à distance mais sans détection d'ouverture de fenêtre ni détection d'absence dynamique.",
+      "3": "Régulation avancée : coupure automatique sur fenêtre ouverte + abaissement automatique sur absence prolongée du foyer.",
+      "4": "Thermique prédictive : anticipation selon l'inertie du bâtiment, prévisions météo, géolocalisation pour retour anticipé et délestage dynamique."
+    },
+    "question": "Votre chauffage baisse-t-il automatiquement lors d'une absence ou à l'ouverture d'une fenêtre ?",
+    "test_procedure": "1. Ouvrir une fenêtre équipée d'un capteur pendant 2 minutes.\n2. Vérifier que la vanne ou le thermostat passe en mode Hors-Gel ou Éco.",
+    "recommendations": {
+      "0_to_1": "Remplacer les têtes thermostatiques manuelles par des modèles connectés dans les pièces principales.",
+      "1_to_2": "Installer des capteurs d'ouverture sur les fenêtres des pièces chauffées.",
+      "2_to_3": "Automatiser la coupure du chauffage sur ouverture de fenêtre avec temporisation de 1 minute.",
+      "3_to_4": "Intégrer le suivi de présence global pour basculer automatiquement en mode Absence lors du départ de la famille."
+    },
+    "auto_requirements": {
+      "entities": [
+        "climate.*",
+        "binary_sensor.*window*",
+        "binary_sensor.*door*"
+      ],
+      "integrations": [
+        "climate"
+      ],
+      "description": "Automatisations de régulation thermique."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "AUTO03",
+    "domain": "AUTO",
+    "name": "Ventilation intelligente",
+    "description": "Pilotage automatique de la VMC ou de l'aération selon l'hygrométrie de la salle de bain ou la qualité d'air (CO2/COV).",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "VMC classique permanente à vitesse fixe sans aucun pilotage domotique.",
+      "1": "Mesure d'humidité ou de qualité d'air existante mais sans aucun automatisme associé.",
+      "2": "VMC enclenchée manuellement via bouton ou horaire fixe.",
+      "3": "Passage automatique en grande vitesse VMC lors d'une douche (pic d'humidité) et retour en petite vitesse après séchage.",
+      "4": "Gestion aéraulique complète : modulation selon l'humidité salle de bain, CO2 dans les chambres, surventilation nocturne estivale rafraîchissante."
+    },
+    "question": "Votre VMC passe-t-elle automatiquement en grande vitesse lors d'une douche puis revient-elle en vitesse normale ?",
+    "test_procedure": "1. Prendre une douche chaude ou tester le capteur d'humidité avec une source de vapeur.\n2. Constater l'enclenchement automatique de la grande vitesse VMC dans les 2 minutes.",
+    "recommendations": {
+      "0_to_1": "Installer un capteur de température et d'humidité dans la salle de bain.",
+      "1_to_2": "Raccorder un micromodule contact sec (ex: Shelly 1) sur la commande petite/grande vitesse de la VMC.",
+      "2_to_3": "Créer une automatisation avec seuil d'humidité dynamique (ou dérivée de taux d'humidité) pour déclencher la VMC.",
+      "3_to_4": "Ajouter un capteur de CO2 dans la chambre principale pour adapter le renouvellement d'air nocturne."
+    },
+    "auto_requirements": {
+      "entities": [
+        "fan.vmc*",
+        "switch.vmc*",
+        "sensor.*humidity*",
+        "sensor.*co2*"
+      ],
+      "integrations": [
+        "fan",
+        "switch"
+      ],
+      "description": "Détection d'automatisations de pilotage de la VMC."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "AUTO04",
+    "domain": "AUTO",
+    "name": "Gestion intelligente des volets",
+    "description": "Automatisation thermique des volets roulants : fermeture estivale anti-surchauffe au soleil et optimisation des apports solaires en hiver.",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Volets manipulés exclusivement à la main sans aucune programmation.",
+      "1": "Heures fixes d'ouverture et de fermeture (ex: 8h / 20h) sans tenir compte de la luminosité.",
+      "2": "Ouverture au lever du soleil et fermeture au coucher du soleil (éphéméride basique).",
+      "3": "Gestion thermique saisonnière : fermeture partielle des façades exposées au soleil en été pour éviter la surchauffe.",
+      "4": "Gestion bioclimatique complète : calcul de l'azimut et élévation solaire, température intérieure/extérieure, mode réveil et présence."
+    },
+    "question": "Vos volets se ferment-ils automatiquement sur les façades ensoleillées en été pour protéger la maison de la chaleur ?",
+    "test_procedure": "1. Vérifier la présence d'une règle fermant les volets Sud/Ouest lors d'une journée d'été ensoleillée lorsque la température extérieure dépasse 25°C.",
+    "recommendations": {
+      "0_to_1": "Automatiser l'ouverture matinale et la fermeture nocturne via l'intégration `sun` (lever et coucher du soleil).",
+      "1_to_2": "Différencier les horaires du week-end pour éviter les réveils inopportuns.",
+      "2_to_3": "Intégrer une automatisation de protection thermique estivale fermant les volets à 50% sur la façade ensoleillée.",
+      "3_to_4": "Utiliser un blueprint de gestion solaire avancée calculant la position exacte du soleil."
+    },
+    "auto_requirements": {
+      "entities": [
+        "cover.*",
+        "sun.sun"
+      ],
+      "integrations": [
+        "cover"
+      ],
+      "description": "Automatisations de positionnement des volets."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "AUTO05",
+    "domain": "AUTO",
+    "name": "Gestion de l'eau",
+    "description": "Détection précoce des fuites d'eau ou surconsommations et protection automatique par fermeture de la vanne générale.",
+    "weight": 12,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Aucun capteur d'inondation, aucune mesure de consommation d'eau.",
+      "1": "Capteurs d'inondation en place mais sans notification sonore ou push configurée.",
+      "2": "Notification push envoyée en cas de détection d'eau mais sans coupure automatique.",
+      "3": "Notification d'alerte immédiate + coupure automatique de la vanne d'arrivée d'eau générale.",
+      "4": "Protection intégrale : capteurs sous tous les points d'eau sensibles, coupure vanne immédiate, alerte sonore multi-pièces et détection de micro-fuite nocturne par débitmètre."
+    },
+    "question": "En cas de détection d'eau au sol, recevez-vous une alerte immédiate et la vanne générale se coupe-t-elle automatiquement ?",
+    "test_procedure": "1. Poser un doigt humide sur les contacts d'un détecteur de fuite.\n2. Vérifier la réception instantanée de la notification push et le passage de la vanne en position fermée.",
+    "recommendations": {
+      "0_to_1": "Installer des détecteurs de fuite d'eau sans fil sous l'évier, le lave-linge et le chauffe-eau.",
+      "1_to_2": "Créer une automatisation de notification push critique sur smartphone en cas de contact avec l'eau.",
+      "2_to_3": "Motoriser la vanne générale d'arrivée d'eau et automatiser sa fermeture sur détection d'eau.",
+      "3_to_4": "Ajouter une règle de surveillance de débit continu (compteur d'eau) pour détecter les fuites cachées."
+    },
+    "auto_requirements": {
+      "entities": [
+        "binary_sensor.*water*",
+        "binary_sensor.*moisture*",
+        "valve.*"
+      ],
+      "integrations": [
+        "binary_sensor"
+      ],
+      "description": "Détecteurs de fuite et vannes connectées."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "AUTO06",
+    "domain": "AUTO",
+    "name": "Appareils domestiques",
+    "description": "Suivi intelligent de la consommation et des cycles des appareils électroménagers (fin de cycle lave-linge/vaisselle, alertes puissance).",
+    "weight": 8,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Aucun suivi des appareils électroménagers.",
+      "1": "Prise connectée avec mesure en place mais sans notification ni traitement de données.",
+      "2": "Notification simple de fin de cycle sur seuil de puissance fixe.",
+      "3": "Gestion propre des cycles : détection de démarrage, temps d'attente, notification fin de cycle vocale/push avec puissance résiduelle filtrée.",
+      "4": "Intégration complète : rappel si le linge n'a pas été déchargé après 1h, synchronisation avec les heures creuses et suivi de consommation d'énergie."
+    },
+    "question": "Recevez-vous une notification sur votre smartphone ou enceinte vocale lorsque le lave-linge ou lave-vaisselle est terminé ?",
+    "test_procedure": "1. Surveiller la courbe de puissance d'une machine en fin de cycle.\n2. Vérifier la notification de fin de cycle lorsque la puissance repasse sous 3W pendant 2 minutes.",
+    "recommendations": {
+      "0_to_1": "Brancher une prise connectée mesurant la puissance sur le lave-linge ou lave-vaisselle.",
+      "1_to_2": "Créer une automatisation déclenchée lorsque la puissance passe de > 100W à < 5W pendant 2 minutes.",
+      "2_to_3": "Ajouter une notification push 'Le lave-linge est terminé' envoyée aux membres du foyer.",
+      "3_to_4": "Compléter avec un rappel si la porte de la machine n'a pas été ouverte après 45 minutes."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*washing_machine*power",
+        "sensor.*lave_linge*power"
+      ],
+      "integrations": [
+        "automation"
+      ],
+      "description": "Automatisations de suivi d'électroménager."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "AUTO07",
+    "domain": "AUTO",
+    "name": "Présence et occupation",
+    "description": "Le système détermine la présence et l'occupation des pièces de manière fiable en combinant plusieurs sources (GPS, Wi-Fi, capteurs de mouvement/présence).",
+    "weight": 12,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Aucune notion de présence dans Home Assistant : le système se comporte toujours de la même manière.",
+      "1": "Présence basée sur un seul capteur GPS smartphone (retards fréquents et imprécisions).",
+      "2": "Présence combinant GPS et détection Wi-Fi du téléphone sur le réseau local.",
+      "3": "Gestion de présence robuste : zone maison (GPS + Wi-Fi) pour chaque membre + capteurs de mouvement dans les pièces de vie.",
+      "4": "Occupation multi-niveaux : détection de présence millimétrique (radar mmWave), états de maison (Maison, Travail, Nuit, Absence, Invités) et réactions instantanées."
+    },
+    "question": "Home Assistant sait-il si la maison est occupée ou vide de manière fiable (détection smartphone + capteurs) ?",
+    "test_procedure": "1. Observer le changement d'état de l'entité `zone.home` ou du groupe de personnes lors d'un départ du domicile.\n2. Vérifier que la présence repasse à 'home' dès la connexion au Wi-Fi de la maison.",
+    "recommendations": {
+      "0_to_1": "Installer l'application Home Assistant Companion sur les smartphones de la famille.",
+      "1_to_2": "Ajouter l'intégration de votre box/routeur (Livebox, Freebox, UniFi) pour suivre la présence Wi-Fi.",
+      "2_to_3": "Créer un groupe de personnes pour disposer d'un état global 'Maison occupée' ou 'Maison vide'.",
+      "3_to_4": "Installer des capteurs de présence radar (mmWave) dans les pièces statiques (bureau, salon) pour éviter l'extinction des lumières."
+    },
+    "auto_requirements": {
+      "entities": [
+        "person.*",
+        "zone.home",
+        "device_tracker.*"
+      ],
+      "integrations": [
+        "person"
+      ],
+      "description": "Entités de personnes et trackers de présence configurés."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "AUTO08",
+    "domain": "AUTO",
+    "name": "Contextualisation",
+    "description": "Combinaison intelligente de plusieurs informations contextuelles plutôt que des horaires fixes rigides (météo, saison, mode de vie, calendrier).",
+    "weight": 12,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Uniquement des déclencheurs horaires simples sans aucune condition contextuelle.",
+      "1": "Quelques conditions basiques (ex: heure + jour de la semaine).",
+      "2": "Conditions de présence et de saison intégrées dans les automatisations principales.",
+      "3": "Contextualisation riche : combinaison de luminosité, saison, présence, calendrier des vacances et prévisions météo.",
+      "4": "Architecture contextuelle complète : modes de vie globaux (Maison, Réception, Nuit, Télétravail, Absence prolongée) pilotant harmonieusement tous les équipements."
+    },
+    "question": "Vos automatisations s'adaptent-elles au contexte global (jours fériés, vacances, météo, mode télétravail) ?",
+    "test_procedure": "1. Vérifier la présence d'un helper de mode de maison (input_select pour les modes de vie) ou de conditions calendrier/météo dans vos automatisations.",
+    "recommendations": {
+      "0_to_1": "Ajouter des conditions de coucher de soleil ou d'horaires aux automatisations de base.",
+      "1_to_2": "Intégrer le calendrier des vacances scolaires ou jours fériés pour adapter le réveil matinal.",
+      "2_to_3": "Créer un helper `input_select` avec les modes de vie (Normal, Télétravail, Soirée, Nuit, Vacances).",
+      "3_to_4": "Conditionner les gros consommateurs et volets aux prévisions météo du jour."
+    },
+    "auto_requirements": {
+      "entities": [
+        "input_select.*mode*",
+        "calendar.*",
+        "weather.*"
+      ],
+      "integrations": [
+        "automation"
+      ],
+      "description": "Présence de helpers de contexte et conditions avancées."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "AUTO09",
+    "domain": "AUTO",
+    "name": "Boucle de vérification",
+    "description": "Contrôle si l'action domotique demandée a réellement produit le résultat attendu (vérification d'état, relance en cas d'échec ou alerte).",
+    "weight": 12,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Envoi aveugle des commandes : aucune vérification que l'appareil a bien réagi (commande ouverte sans feed-back).",
+      "1": "Feed-back visuel dans l'interface sans vérification automatisée.",
+      "2": "Vérification manuelle via notifications ou capteurs d'état.",
+      "3": "Automatisations critiques avec boucle de contrôle (ex: ordre de fermeture de vanne suivi d'un contrôle de débit nul après 10s).",
+      "4": "Boucle fermée systématique sur les fonctions critiques : ordre → attente confirmation d'état → relance automatique si échec → alerte en cas de non-réponse."
+    },
+    "question": "Sur vos actions critiques (fermeture serrure, coupure vanne, arrêt chauffage), Home Assistant vérifie-t-il que l'action s'est réellement produite ?",
+    "test_procedure": "1. Inspecter une automatisation critique (ex: fermeture de porte ou coupure vanne).\n2. Vérifier la présence d'une étape `wait_for_trigger` ou d'un `repeat` contrôlant l'état final réel de l'équipement.",
+    "recommendations": {
+      "0_to_1": "Vérifier que vos micromodules renvoient un retour d'état réel d'alimentation et non un état théorique.",
+      "1_to_2": "Ajouter un capteur physique indépendant (ex: capteur d'ouverture sur porte de garage) pour contrôler la fermeture réelle.",
+      "2_to_3": "Ajouter une temporisation et un test de confirmation dans vos scripts de verrouillage ou de coupure.",
+      "3_to_4": "Créer une alerte push prioritaire en cas d'échec de fermeture confirmée après 3 tentatives."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [
+        "automation"
+      ],
+      "description": "Automatisations structurées avec contrôles d'état conditionnels."
+    },
+    "model_version": "1.0"
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "description": "Grande propriété avec multi-zones, gestion thermique avancée, arrosage, sécurité et présence.",
+  "total_entities": 450,
+  "total_devices": 120,
+  "total_areas": 15,
+  "integrations_present": [
+    "zha",
+    "mqtt",
+    "esphome",
+    "nut",
+    "backup",
+    "wled",
+    "frigate"
+  ],
+  "local_integrations": [
+    "zha",
+    "mqtt",
+    "esphome",
+    "nut",
+    "backup",
+    "wled",
+    "frigate"
+  ],
+  "cloud_integrations": [],
+  "lights_count": 55,
+  "covers_count": 18,
+  "climates_count": 8,
+  "binary_sensors_count": 65,
+  "sensors_count": 140,
+  "automations_count": 95,
+  "scripts_count": 25,
+  "has_zigbee": true,
+  "has_mqtt": true,
+  "has_esphome": true,
+  "has_ups_monitoring": true,
+  "has_water_meter": true,
+  "has_connected_valve": true,
+  "has_solar_production": true,
+  "solar_power_entity": "sensor.solar_total"
+}

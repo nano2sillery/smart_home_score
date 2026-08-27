@@ -1,0 +1,222 @@
+[
+  {
+    "id": "MAINT01",
+    "domain": "MAINT",
+    "name": "Convention de nommage",
+    "description": "Les entités, appareils et automatisations suivent une nomenclature claire, structurée et cohérente (ex: domaine.piece_equipement_fonction) sans identifiants bruts obscurs.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Majorité d'entités avec des noms génériques bruts non renommés (ex: `switch.0xa4c138740a80a056` ou `sensor.tz3000_humidity`).",
+      "1": "Moins de 50 % des entités sont proprement renommées.",
+      "2": "La plupart des entités ont un nom compréhensible mais sans convention de nommage homogène.",
+      "3": "Convention de nommage appliquée sur plus de 80 % du parc (ex: `light.salon_plafonnier`, `sensor.cuisine_temperature`).",
+      "4": "Nomenclature exemplaire sur 100 % des entités : format strict `domaine.piece_appareil_fonction`, alias clairs, aucun identifiant IEEE brut résiduel."
+    },
+    "question": "Vos entités et appareils suivent-ils une nomenclature claire et ordonnée (ex: light.salon_plafonnier) ?",
+    "test_procedure": "1. Ouvrir la liste des entités dans Paramètres → Appareils & Services → Entités.\n2. Vérifier l'absence d'entités contenant des adresses hexadécimales brutes (0x...).",
+    "recommendations": {
+      "0_to_1": "Renommer les entités contenant des identifiants bruts (0x...) dès leur appairage.",
+      "1_to_2": "Adopter un format standard : `piece_appareil_type` (ex: `salon_volet_baie`, `chambre_temp_humidite`).",
+      "2_to_3": "Harmoniser les noms des entités sur l'ensemble des intégrations.",
+      "3_to_4": "Nettoyer systématiquement les entités résiduelles lors de l'ajout de nouveaux matériels."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Analyse syntaxique des entity_id du registre pour détecter les motifs 0x..."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "MAINT02",
+    "domain": "MAINT",
+    "name": "Documentation de l'installation",
+    "description": "Les éléments techniques importants de l'installation sont documentés dans un mémo ou dossier récapitulatif (adresses IP fixes, schémas, comptes, protocoles).",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Aucune documentation écrite : toute la connaissance de l'installation est uniquement dans la tête du gestionnaire.",
+      "1": "Quelques notes éparses ou fichiers textes non structurés.",
+      "2": "Tableau des adresses IP fixes et liste des matériels disponibles mais non tenus à jour.",
+      "3": "Dossier technique clair récapitulant les adresses IP, le plan du réseau, les accès de secours et la liste des modules installés.",
+      "4": "Documentation complète et à jour : schéma de l'installation, plan de câblage, guide de maintenance pour les proches et inventaire matériel."
+    },
+    "question": "Avez-vous un document récapitulatif (adresses IP, schémas, matériel) permettant de comprendre votre installation ?",
+    "test_procedure": "1. Vérifier l'existence d'un document récapitulatif (Word, PDF, Markdown, Notion ou papier) accessible hors de Home Assistant.",
+    "recommendations": {
+      "0_to_1": "Créer un document simple listant l'adresse IP de Home Assistant et les identifiants d'accès box/serveur.",
+      "1_to_2": "Lister les adresses IP fixes de tous les périphériques réseau (passerelles, caméras, onduleurs).",
+      "2_to_3": "Ajouter un tableau récapitulant les types de modules installés par pièce.",
+      "3_to_4": "Rédiger une notice d'une page expliquant le fonctionnement de base pour votre famille en cas d'absence."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Validation humaine de la documentation -> QUESTION_REQUIRED."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "MAINT03",
+    "domain": "MAINT",
+    "name": "Automatisations documentées",
+    "description": "Les automatisations et scripts possèdent des descriptions claires précisant leur rôle, déclencheurs et conditions.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Aucune description sur les automatisations, noms par défaut obscurs (ex: 'Nouvelle automatisation 3').",
+      "1": "Noms compréhensibles mais champ 'description' vide sur la quasi-totalité des scénarios.",
+      "2": "Description renseignée sur les quelques automatisations complexes seulement.",
+      "3": "Plus de 80 % des automatisations possèdent un titre explicite et une description détaillée de leur rôle.",
+      "4": "Documentation irréprochable : 100 % des automatisations et scripts possèdent une description complète, un alias structuré et des commentaires dans les blocs complexes."
+    },
+    "question": "Vos automatisations et scripts comportent-ils tous une description expliquant ce qu'ils font ?",
+    "test_procedure": "1. Ouvrir la liste des automatisations dans Paramètres → Automatisations.\n2. Vérifier que chaque scénario comporte une description récapitulative de son objectif.",
+    "recommendations": {
+      "0_to_1": "Donner des noms clairs à chaque automatisation en indiquant la pièce et l'action.",
+      "1_to_2": "Renseigner le champ 'Description' sur vos 5 automatisations les plus complexes.",
+      "2_to_3": "Prendre l'habitude d'écrire 1 phrase explicative dans la description de chaque nouvelle automatisation.",
+      "3_to_4": "Ajouter des blocs de commentaires (`#`) dans les scripts de templates complexes."
+    },
+    "auto_requirements": {
+      "entities": [
+        "automation.*"
+      ],
+      "integrations": [
+        "automation"
+      ],
+      "description": "Ratio d'automatisations avec description non vide."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "MAINT04",
+    "domain": "MAINT",
+    "name": "Nettoyage des entités inutilisées",
+    "description": "Les entités orphelines, appareils retirés ou intégrations fantômes sont régulièrement identifiés et nettoyés.",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Des dizaines d'anciennes entités supprimées ou hors d'usage encombrent le registre sans jamais être purgées.",
+      "1": "Nettoyage très rare, nombreuses entités 'restaurées' ou orphelines visibles dans les outils de développement.",
+      "2": "Nettoyage occasionnel des appareils retirés.",
+      "3": "Registre propre : les entités orphelines sont supprimées au fur et à mesure du remplacement du matériel.",
+      "4": "Gestion exemplaire : registre d'entités rigoureusement purgé, aucune entité fantôme, base de données SQLite/MariaDB optimisée."
+    },
+    "question": "Nettoyez-vous régulièrement les anciennes entités et anciens appareils qui ne sont plus utilisés ?",
+    "test_procedure": "1. Aller dans Paramètres → Appareils & Services → Entités.\n2. Filtrer sur les entités avec l'icône rouge d'erreur ou le statut 'Restauré' et vérifier leur faible nombre.",
+    "recommendations": {
+      "0_to_1": "Filtrer les entités orphelines dans les paramètres et supprimer les entités d'anciens appareils testés.",
+      "1_to_2": "Supprimer les intégrations de démonstration ou inutilisées.",
+      "2_to_3": "Vérifier et nettoyer les helpers (input_boolean, input_select) devenus obsolètes.",
+      "3_to_4": "Procéder à une vérification semestrielle du registre des entités."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Comptage des entités en statut 'restored' ou orphelines."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "MAINT05",
+    "domain": "MAINT",
+    "name": "Tableau de santé technique",
+    "description": "Un tableau de bord technique dédié permet de surveiller rapidement l'état du système : niveau des batteries, charge CPU, mémoire, espace disque et appareils hors ligne.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Aucun suivi de l'état technique : une batterie vide est découverte uniquement quand l'appareil ne répond plus.",
+      "1": "Niveau des batteries consultable uniquement appareil par appareil dans les paramètres.",
+      "2": "Présence d'une carte basique listant les batteries faibles sur un dashboard.",
+      "3": "Dashboard technique complet regroupant l'état des batteries, les métriques système (CPU, RAM, Disque) et les appareils hors ligne.",
+      "4": "Supervision technique d'excellence : vue santé complète + automatisation alertant dès qu'une pile passe sous 15 % avec modèle de pile à remplacer précisé."
+    },
+    "question": "Avez-vous une vue ou une alerte centralisant le niveau de toutes les piles et batteries de vos capteurs ?",
+    "test_procedure": "1. Vérifier la présence d'une vue technique ou d'une carte listant les entités `sensor.*_battery` triées par niveau croissant.",
+    "recommendations": {
+      "0_to_1": "Ajouter une carte Lovelace 'Entités' regroupant les capteurs de batterie de la maison.",
+      "1_to_2": "Installer la carte `auto-entities` pour afficher automatiquement les batteries < 20 %.",
+      "2_to_3": "Créer une vue technique dédiée avec suivi du stockage disque et de la charge serveur.",
+      "3_to_4": "Automatiser une notification mensuelle récapitulant les piles à changer avec leurs références (CR2032, CR2450, AAA)."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*battery*",
+        "sensor.*disk*",
+        "sensor.*memory*"
+      ],
+      "integrations": [
+        "systemmonitor"
+      ],
+      "description": "Présence de capteurs de batteries et de monitoring système."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "MAINT06",
+    "domain": "MAINT",
+    "name": "Procédure de reprise d'urgence",
+    "description": "Les informations indispensables pour redémarrer ou réinstaller le système en cas de panne matérielle majeure sont rédigées et accessibles.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Aucune procédure : en cas de crash du serveur, le gestionnaire ne sait pas par où commencer.",
+      "1": "Connaissance orale des étapes mais aucun document écrit accessible hors ligne.",
+      "2": "Procédure rédigée mais incomplète (manque les mots de passe de chiffrement ou l'accès aux sauvegardes).",
+      "3": "Procédure de reprise formalisée étape par étape (support d'installation, méthode de flash, restauration de sauvegarde).",
+      "4": "Plan de reprise d'activité (PRA) complet : document imprimé ou hors ligne, clé USB de secours prête à l'emploi et procédure compréhensible par un proche."
+    },
+    "question": "Avez-vous une procédure écrite expliquant comment réinstaller Home Assistant et restaurer votre sauvegarde en cas de crash ?",
+    "test_procedure": "1. Vérifier l'existence d'une fiche d'urgence récapitulant les 5 étapes clés de remise en service.",
+    "recommendations": {
+      "0_to_1": "Noter sur une feuille l'adresse de téléchargement de Home Assistant OS et le logiciel de flash (ex: Raspberry Pi Imager).",
+      "1_to_2": "Indiquer précisément l'emplacement de stockage de vos sauvegardes externes.",
+      "2_to_3": "Rédiger la procédure pas-à-pas : 1. Flasher le support, 2. Démarrer, 3. Cliquer sur 'Restaurer à partir d'une sauvegarde'.",
+      "3_to_4": "Conserver une clé USB d'installation prête dans le tiroir technique de la maison."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Validation humaine de la procédure de reprise -> QUESTION_REQUIRED."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "MAINT07",
+    "domain": "MAINT",
+    "name": "Historique des modifications",
+    "description": "Les évolutions significatives de l'installation sont traçables (gestionnaire de versions Git, journal de bord ou notes de révisions datées).",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Aucun historique des modifications : impossible de savoir ce qui a été modifié lors d'une régression ou panne.",
+      "1": "Notes sporadiques sans date ni suivi structuré.",
+      "2": "Journal de bord textuel tenu à jour lors des modifications majeures.",
+      "3": "Historique des modifications régulier et daté (changelog ou sauvegardes étiquetées avant chaque gros changement).",
+      "4": "Traçabilité exemplaire : configuration versionnée sous Git avec messages de commit explicites ou journal des révisions exhaustif."
+    },
+    "question": "Tenez-vous un historique ou un journal de vos modifications pour retrouver facilement ce qui a changé en cas de bug ?",
+    "test_procedure": "1. Vérifier la présence d'un journal de bord ou d'un dépôt Git retraçant les évolutions de la configuration.",
+    "recommendations": {
+      "0_to_1": "Créer un fichier texte `CHANGELOG.md` ou un carnet de notes dédié pour noter les changements importants.",
+      "1_to_2": "Prendre l'habitude de nommer explicitement vos sauvegardes manuelles avant une grosse mise à jour.",
+      "2_to_3": "Tenir un journal daté listant chaque nouvel appareil ajouté ou automatisation modifiée.",
+      "3_to_4": "Initialiser un dépôt Git (privé) pour versionner vos fichiers de configuration et suivre les révisions."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Validation du suivi de version -> QUESTION_REQUIRED."
+    },
+    "model_version": "1.0"
+  }
+]

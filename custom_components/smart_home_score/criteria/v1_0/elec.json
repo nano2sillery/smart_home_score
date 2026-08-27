@@ -1,0 +1,178 @@
+[
+  {
+    "id": "ELEC01",
+    "domain": "ELEC",
+    "name": "Commande manuelle conservée",
+    "description": "Les fonctions essentielles (éclairage, volets, chauffage, accès) restent utilisables localement et manuellement même si Home Assistant est arrêté ou hors service.",
+    "weight": 20,
+    "critical": true,
+    "default_evaluation_type": "TEST",
+    "levels": {
+      "0": "Aucune commande manuelle de secours : l'arrêt de Home Assistant bloque l'usage des éclairages ou ouvrants vitaux.",
+      "1": "Moins de 50 % des points vitaux possèdent un interrupteur ou une commande autonome de secours.",
+      "2": "La majorité des éclairages fonctionnent manuellement, mais certains volets ou chauffages restent tributaires du serveur.",
+      "3": "Toutes les fonctions essentielles possèdent une commande locale fonctionnelle avec HA arrêté (test non formalisé).",
+      "4": "100 % des fonctions essentielles sont utilisables manuellement et un test réel d'extinction HA a validé le comportement."
+    },
+    "question": "Vos éclairages, volets et chauffages restent-ils manipulables via leurs boutons physiques quand le serveur Home Assistant est totalement éteint ?",
+    "test_procedure": "1. Arrêter Home Assistant (extinction complète).\n2. Actionner un interrupteur d'éclairage dans chaque pièce.\n3. Actionner un bouton de volet roulant.\n4. Vérifier la consigne manuelle de chauffage.\n5. Rallumer Home Assistant.",
+    "recommendations": {
+      "0_to_1": "Installer des interrupteurs physiques câblés ou des micromodules conservant l'entrée poussoir locale sur au moins un circuit prioritaire.",
+      "1_to_2": "Équiper les pièces de vie principales d'interrupteurs physiques autonomes reliés directement aux actionneurs.",
+      "2_to_3": "Généraliser le raccordement direct des poussoirs physiques sur l'ensemble des modules d'éclairage et de volets.",
+      "3_to_4": "Formaliser et réaliser un test semestriel d'arrêt complet de Home Assistant pour valider l'autonomie physique totale."
+    },
+    "auto_requirements": {
+      "entities": [
+        "switch.*",
+        "light.*",
+        "cover.*"
+      ],
+      "integrations": [
+        "zha",
+        "zigbee2mqtt",
+        "shelly",
+        "esphome"
+      ],
+      "description": "Vérification de la présence d'interrupteurs matériels ou de liaisons directes documentées."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "ELEC02",
+    "domain": "ELEC",
+    "name": "Dimensionnement des actionneurs",
+    "description": "Les modules, relais, contacteurs et prises connectées sont adaptés à la puissance admissible et protégés par un disjoncteur de calibre approprié.",
+    "weight": 20,
+    "critical": true,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Des appareils à forte charge (chauffe-eau, radiateurs, borne VE) sont pilotés par des prises ou micro-modules non calibrés sans contacteur de puissance.",
+      "1": "Actionneurs sous-dimensionnés sur plusieurs gros consommateurs, risque potentiel d'échauffement.",
+      "2": "Puissances respectées sur la plupart des charges, mais sans marge de sécurité ou contacteur de puissance sur le chauffe-eau.",
+      "3": "Tous les consommateurs > 10A sont relayés par un contacteur de puissance modulaire dédié.",
+      "4": "Dimensionnement exemplaire : contacteurs modulaires avec protections divisionnaires adaptées et vérification thermique."
+    },
+    "question": "Vos consommateurs de forte puissance (chauffe-eau, chauffage, recharge) sont-ils relayés par des contacteurs de puissance adaptés au tableau électrique ?",
+    "test_procedure": "1. Identifier les gros consommateurs (> 2000W).\n2. Inspecter le tableau électrique pour confirmer la présence de contacteurs modulaires (ex: 20A/25A).\n3. Vérifier qu'aucun micro-relais encastré ne supporte directement la charge totale.",
+    "recommendations": {
+      "0_to_1": "Déconnecter immédiatement les micro-modules sur les charges supérieures à 10A (chauffe-eau, radiateurs puissants).",
+      "1_to_2": "Remplacer les micro-relais directs par un contacteur de puissance au tableau électrique pour le consommateur principal.",
+      "2_to_3": "Installer un contacteur jour/nuit ou modulaire 20A/25A pour chaque charge inductive ou supérieure à 2000W.",
+      "3_to_4": "Vérifier le serrage des bornes au tableau et documenter les calibres nominaux de chaque circuit domotisé."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*power",
+        "sensor.*energy"
+      ],
+      "integrations": [],
+      "description": "Vérification que les pics de puissance mesurés n'excèdent pas les calibres déclarés des modules."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "ELEC03",
+    "domain": "ELEC",
+    "name": "États sûrs après redémarrage",
+    "description": "Après coupure électrique ou redémarrage d'un module, retour dans un état défini et non dangereux (Power-on state configuré).",
+    "weight": 20,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Comportement au redémarrage non maîtrisé : des circuits critiques peuvent se rallumer inopinément après coupure.",
+      "1": "Quelques modules seulement ont un power-on state configuré de manière explicite.",
+      "2": "La majorité des modules conservent leur état précédent mais sans politique d'état sûr formalisée.",
+      "3": "Politique d'état sûr définie : éclairages en arrêt ou dernier état, actionneurs critiques en état sécurisé.",
+      "4": "100 % des actionneurs ont leur Power-On State configuré individuellement et testé après coupure réelle."
+    },
+    "question": "Avez-vous configuré le comportement au retour du courant (Power-on state) sur vos modules connectés pour éviter tout allumage involontaire ?",
+    "test_procedure": "1. Couper le disjoncteur du circuit domotique pendant 10 secondes.\n2. Rétablir le courant.\n3. Constater l'état de chaque éclairage et équipement.",
+    "recommendations": {
+      "0_to_1": "Identifier les modules domotiques supportant la configuration du 'Power-on state' (Zigbee / Wi-Fi).",
+      "1_to_2": "Configurer les modules d'éclairage des chambres pour qu'ils restent éteints (OFF) après coupure de courant nocturne.",
+      "2_to_3": "Définir systématiquement le paramètre 'Power-on State' sur OFF ou RESTORE sur l'ensemble du parc.",
+      "3_to_4": "Tester l'ensemble des circuits après une coupure disjoncteur générale pour valider l'absence d'état dangereux."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [
+        "zha",
+        "zigbee2mqtt",
+        "shelly",
+        "esphome"
+      ],
+      "description": "Vérification des attributs power_on_behavior dans ZHA/Zigbee2MQTT."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "ELEC04",
+    "domain": "ELEC",
+    "name": "Interverrouillages",
+    "description": "Protection contre les commandes contradictoires simultanées (ex: interverrouillage matériel montée/descente sur volets ou moteurs).",
+    "weight": 20,
+    "critical": true,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Volets ou moteurs pilotés par 2 relais simples indépendants sans interverrouillage matériel ni sécurité logicielle.",
+      "1": "Sécurité logicielle basique dans Home Assistant mais aucun verrouillage matériel au niveau du micromodule.",
+      "2": "Modules de volets dédiés utilisés mais sans vérification de la protection contre les ordres contradictoires.",
+      "3": "Modules volets dédiés certifiés avec inversion de sens temporisée et protection électrique intégrée.",
+      "4": "Interverrouillage matériel natif testé + inversion de sens protégée + calibrage des fins de course validé."
+    },
+    "question": "Vos volets roulants et moteurs utilisent-ils des modules dédiés avec interverrouillage électrique matériel empêchant la montée et la descente simultanées ?",
+    "test_procedure": "1. Vérifier la référence des modules de volets (ex: Shelly Plus 2PM en mode Cover, Fibaro Roller Shutter, Nodon Zigbee).\n2. Vérifier que le mode 'Cover / Roller Shutter' avec interlock matériel est activé.",
+    "recommendations": {
+      "0_to_1": "Remplacer immédiatement les relais simples non verrouillés par des micromodules pour volets certifiés (mode cover matériel).",
+      "1_to_2": "Activer le mode 'Interlock' dans les paramètres internes des modules pour interdire physiquement l'alimentation simultanée.",
+      "2_to_3": "Configurer les temps de pause à l'inversion de sens (au moins 500ms) pour préserver les enroulements moteurs.",
+      "3_to_4": "Valider le calibrage automatique des fins de course et le temps de transit sur chaque ouvrant."
+    },
+    "auto_requirements": {
+      "entities": [
+        "cover.*"
+      ],
+      "integrations": [
+        "zha",
+        "zigbee2mqtt",
+        "shelly"
+      ],
+      "description": "Vérification que les entités d'ouvrants proviennent d'intégrations cover natives et non de commutateurs switch."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "ELEC05",
+    "domain": "ELEC",
+    "name": "Gestion des équipements critiques",
+    "description": "Comportement maîtrisé en cas de panne ou de défaillance sur les équipements critiques (eau, chauffage, sécurité, accès).",
+    "weight": 20,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Une panne domotique peut entraîner un blocage critique (ex: porte d'entrée inaccessible, vanne bloquée fermée sans bypass).",
+      "1": "Comportement de secours partiel : seuls quelques équipements disposent d'un déverrouillage manuel.",
+      "2": "Bypass manuel existant sur les circuits principaux mais sans procédure claire de repli.",
+      "3": "Équipements critiques configurés en sécurité positive (ex: vanne d'eau à fermeture sécurisée avec ouverture manuelle, serrure avec clé physique).",
+      "4": "Sécurité positive intégrale, redondance manuelle systématique et comportement de panne documenté."
+    },
+    "question": "Tous vos équipements critiques (serrure connectée, vanne générale, pompe) disposent-ils d'une solution de secours physique (clé manuelle, vanne bypass) ?",
+    "test_procedure": "1. Vérifier la présence d'une clé physique de secours pour chaque serrure connectée.\n2. Vérifier la présence d'une manette manuelle sur la vanne de coupure d'eau générale.\n3. Vérifier le bypass manuel du système de chauffage.",
+    "recommendations": {
+      "0_to_1": "Conserver une clé physique de secours accessible en extérieur pour toute serrure connectée.",
+      "1_to_2": "Installer une vanne motorisée débrayable manuellement sans outil sur l'arrivée d'eau principale.",
+      "2_to_3": "Documenter la procédure de secours pour chaque équipement critique de la maison.",
+      "3_to_4": "Tester annuellement le débrayage manuel de chaque équipement critique pour garantir son fonctionnement."
+    },
+    "auto_requirements": {
+      "entities": [
+        "lock.*",
+        "valve.*"
+      ],
+      "integrations": [],
+      "description": "Vérification de la présence de dispositifs de sécurité et de secours déclarés."
+    },
+    "model_version": "1.0"
+  }
+]

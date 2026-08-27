@@ -1,0 +1,56 @@
+name: ⚖️ Contestation ou Erreur d'Évaluation AUTO
+description: Signalez une proposition automatique du moteur qui ne correspond pas à votre installation
+labels: ["evaluation-dispute", "beta-feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci pour votre retour bêta ! Ce formulaire permet d'ajuster la précision des règles déterministes.
+  - type: input
+    id: criterion_id
+    attributes:
+      label: Identifiant du Critère
+      description: "Exemple: ELEC02, CYBER06, RES05, ENER04"
+      placeholder: "ex: CYBER06"
+    validations:
+      required: true
+  - type: dropdown
+    id: proposed_score
+    attributes:
+      label: Note proposée automatiquement par Smart Home Score
+      options:
+        - "0 / 4"
+        - "1 / 4"
+        - "2 / 4"
+        - "3 / 4"
+        - "4 / 4"
+        - "Non détecté / QUESTION_REQUIRED"
+    validations:
+      required: true
+  - type: dropdown
+    id: expected_score
+    attributes:
+      label: Note réelle attendue
+      options:
+        - "0 / 4"
+        - "1 / 4"
+        - "2 / 4"
+        - "3 / 4"
+        - "4 / 4"
+        - "NOT_APPLICABLE"
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: Pourquoi cette proposition est-elle inexacte ?
+      description: Expliquez la réalité de votre matériel ou configuration.
+      placeholder: "Ex: J'ai bien un onduleur connecté via NUT, mais le capteur de charge n'a pas été détecté..."
+    validations:
+      required: true
+  - type: textarea
+    id: anonymized_diag
+    attributes:
+      label: Diagnostic Anonymisé (Facultatif)
+      description: "Copiez ici l'extrait pertinent de votre export de diagnostic (aucun identifiant privé)."
+      render: json

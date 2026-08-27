@@ -1,0 +1,271 @@
+[
+  {
+    "id": "RES01",
+    "domain": "RES",
+    "name": "Fonctionnement sans Internet",
+    "description": "Les fonctions locales essentielles (lumières, volets, chauffage, automatisations internes) continuent de fonctionner parfaitement lors d'une coupure de la connexion Internet.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "TEST",
+    "levels": {
+      "0": "La majorité des équipements et automatisations cessent de fonctionner dès que la connexion Internet est coupée (dépendance cloud totale).",
+      "1": "Moins de 50 % des automatisations fonctionnent sans Internet.",
+      "2": "Les commandes manuelles fonctionnent mais de nombreuses automatisations dépendent du cloud.",
+      "3": "Toutes les automatisations et fonctions essentielles fonctionnent localement en cas de coupure WAN (test non formalisé).",
+      "4": "Autonomie locale totale validée par un test réel de coupure Internet (déconnexion fibre/ADSL pendant 1h sans impact sur la vie quotidienne)."
+    },
+    "question": "Avez-vous testé le fonctionnement de votre maison en débranchant le câble Internet de votre box ?",
+    "test_procedure": "1. Débrancher le câble optique/ADSL de votre box Internet.\n2. Vérifier que l'application Home Assistant fonctionne en local via Wi-Fi.\n3. Tester l'allumage des éclairages, le pilotage des volets et les automatisations de détection.\n4. Rebrancher le câble Internet.",
+    "recommendations": {
+      "0_to_1": "Remplacer progressivement les prises et ampoules dépendantes d'un cloud propriétaire par des modules locaux Zigbee, Matter ou ESPHome.",
+      "1_to_2": "Migrer les automatisations critiques pour qu'elles n'utilisent que des entités et intégrations locales.",
+      "2_to_3": "Vérifier que les passerelles et ponts fonctionnent en communication locale sans passerelle cloud obligatoire.",
+      "3_to_4": "Réaliser un test périodique d'autonomie hors ligne en coupant l'accès Internet pendant 30 minutes."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [
+        "zha",
+        "zigbee2mqtt",
+        "matter",
+        "esphome",
+        "shelly"
+      ],
+      "description": "Ratio d'entités locales vs cloud."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "RES02",
+    "domain": "RES",
+    "name": "Fonctionnement sans Home Assistant",
+    "description": "Les fonctions essentielles disposent d'un mode manuel physique ou de liaisons directes autonomes (Zigbee direct binding, télécommandes associées) en cas d'arrêt du serveur.",
+    "weight": 15,
+    "critical": true,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "L'arrêt de Home Assistant plonge le logement dans le noir sans aucune possibilité d'allumage ou d'ouverture.",
+      "1": "Quelques interrupteurs seulement restent opérationnels sans le serveur.",
+      "2": "Les boutons poussoirs reliés directement aux modules fonctionnent, mais les télécommandes sans fil sont inopérantes.",
+      "3": "L'ensemble des éclairages et volets sont manipulables physiquement sans Home Assistant.",
+      "4": "Résilience maximale : commandes physiques directes sur 100 % des circuits + liaisons Zigbee direct binding sur les télécommandes sans fil."
+    },
+    "question": "Vos télécommandes et boutons physiques continuent-ils de fonctionner si la machine Home Assistant est éteinte ?",
+    "test_procedure": "1. Éteindre le serveur Home Assistant.\n2. Actionner les télécommandes sans fil associées aux éclairages.\n3. Vérifier les interrupteurs physiques câblés.",
+    "recommendations": {
+      "0_to_1": "Câbler les interrupteurs physiques directement sur les entrées 'Switch' des micromodules.",
+      "1_to_2": "Assurer que chaque pièce de vie possède au moins une commande physique directe indépendante du serveur.",
+      "2_to_3": "Utiliser le 'Direct Binding' Zigbee pour associer directement les télécommandes sans fil aux ampoules cibles.",
+      "3_to_4": "Valider la résilience complète par un test d'arrêt prolongé de la machine hôte."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Information matérielle -> QUESTION_REQUIRED."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "RES03",
+    "domain": "RES",
+    "name": "Supervision périphériques indisponibles",
+    "description": "Home Assistant identifie, supervise et alerte sur les périphériques importants ou capteurs critiques devenus indisponibles ou hors ligne.",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Aucune surveillance des entités indisponibles : une panne de capteur peut passer inaperçue pendant des mois.",
+      "1": "Entités indisponibles visibles uniquement en ouvrant la liste complète des entités dans les paramètres.",
+      "2": "Présence d'une carte ou d'un compteur d'entités indisponibles sur un dashboard technique.",
+      "3": "Automatisation ou carte dédiée surveillant les capteurs critiques avec filtrage des faux positifs.",
+      "4": "Système de supervision proactif : alerte immédiate (push / notification) si un capteur vital (fumée, fuite, passerelle, thermomètre) devient indisponible > 1h."
+    },
+    "question": "Recevez-vous une notification si un capteur important (thermomètre, détecteur de fuite, passerelle) devient indisponible ?",
+    "test_procedure": "1. Vérifier la présence d'une automatisation ou d'un template surveillant les états 'unavailable' ou 'unknown'.\n2. Retirer temporairement la pile d'un capteur de test pour vérifier la levée d'alerte.",
+    "recommendations": {
+      "0_to_1": "Créer un helper ou groupe listant les entités critiques de la maison.",
+      "1_to_2": "Ajouter une carte de supervision technique sur votre dashboard listant les capteurs actuellement hors ligne.",
+      "2_to_3": "Créer une automatisation déclenchée lorsqu'un capteur de sécurité reste indisponible plus de 30 minutes.",
+      "3_to_4": "Intégrer une notification quotidienne ou hebdomadaire récapitulant l'état de santé des périphériques."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*unavailable*",
+        "sensor.*health*"
+      ],
+      "integrations": [
+        "automation"
+      ],
+      "description": "Détection d'automatisations d'alerte sur indisponibilité."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "RES04",
+    "domain": "RES",
+    "name": "Qualité du réseau domotique",
+    "description": "La santé et la qualité du maillage des réseaux domotiques (Zigbee, Wi-Fi, Matter, Z-Wave) sont surveillées avec un nombre suffisant de routeurs.",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Réseau instable, pertes de paquets fréquentes, de nombreux périphériques aux limites de portée sans routeur.",
+      "1": "Réseau fonctionnel mais avec des zones d'ombre régulières et des capteurs déconnectés de façon intermittente.",
+      "2": "Nombre de routeurs satisfaisant mais sans surveillance de la qualité de liaison (LQI / RSSI).",
+      "3": "Réseau stable et bien maillé avec un ratio d'au moins 1 routeur (prise/module secteur) pour 3 capteurs sur pile.",
+      "4": "Maillage exemplaire : couverture totale sans zone d'ombre, LQI élevé sur 100 % des nœuds, carte réseau consultée régulièrement."
+    },
+    "question": "Votre réseau Zigbee/domotique est-il stable et bien maillé grâce à des prises ou modules branchés sur secteur faisant office de routeurs ?",
+    "test_procedure": "1. Ouvrir la cartographie réseau Zigbee (ZHA ou Zigbee2MQTT).\n2. Vérifier que chaque capteur sur pile possède au moins deux chemins de routage vers des routeurs avec un LQI > 100.",
+    "recommendations": {
+      "0_to_1": "Ajouter 1 ou 2 prises connectées Zigbee sur secteur dans les pièces intermédiaires pour servir de routeurs.",
+      "1_to_2": "Éloigner le coordinateur Zigbee de la box Wi-Fi à l'aide d'une rallonge USB de 1 mètre pour réduire les interférences.",
+      "2_to_3": "Vérifier et ajuster les canaux Zigbee et Wi-Fi pour éviter le chevauchement des fréquences 2.4 GHz.",
+      "3_to_4": "Maintenir un maillage dense avec des liaisons redondantes vers l'ensemble des capteurs d'extrémité."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*_lqi",
+        "sensor.*_rssi"
+      ],
+      "integrations": [
+        "zha",
+        "zigbee2mqtt"
+      ],
+      "description": "Comptage des routeurs et capteurs dans le registre Zigbee."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "RES05",
+    "domain": "RES",
+    "name": "Sauvegardes Home Assistant",
+    "description": "Des sauvegardes complètes automatiques et régulières de Home Assistant sont programmées et actives.",
+    "weight": 15,
+    "critical": true,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Aucune sauvegarde configurée, aucune sauvegarde récente disponible en cas de défaillance.",
+      "1": "Sauvegardes manuelles très occasionnelles (> 3 mois) sans automatisation.",
+      "2": "Sauvegarde automatique hebdomadaire active mais sans conservation gérée (risque de saturation du stockage).",
+      "3": "Sauvegarde automatique quotidienne ou hebdomadaire avec rétention tournante (ex: conservation des 7 dernières).",
+      "4": "Sauvegarde automatique quotidienne chiffrée avec purge automatique des anciennes archives et supervision active."
+    },
+    "question": "Avez-vous configuré des sauvegardes automatiques régulières (quotidiennes ou hebdomadaires) de votre Home Assistant ?",
+    "test_procedure": "1. Aller dans Paramètres → Système → Sauvegardes.\n2. Vérifier la date de la dernière sauvegarde et la planification automatique active.",
+    "recommendations": {
+      "0_to_1": "Créer immédiatement une première sauvegarde complète manuelle dans Paramètres → Système → Sauvegardes.",
+      "1_to_2": "Activer la planification de sauvegarde native de Home Assistant ou installer un add-on de sauvegarde automatique.",
+      "2_to_3": "Configurer une fréquence de sauvegarde quotidienne ou hebdomadaire avec un nombre maximum de 5 à 10 sauvegardes conservées.",
+      "3_to_4": "Vérifier que les sauvegardes sont générées sans erreur et surveiller l'espace disque disponible."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*backup*",
+        "update.*"
+      ],
+      "integrations": [
+        "backup"
+      ],
+      "description": "Vérification de l'état des sauvegardes via l'API Backup de Home Assistant."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "RES06",
+    "domain": "RES",
+    "name": "Sauvegarde hors de Home Assistant",
+    "description": "Au moins une copie des sauvegardes est automatiquement exportée et conservée hors de la machine Home Assistant (clé USB externe, NAS local, Google Drive, OneDrive, Cloud chiffré).",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Toutes les sauvegardes sont stockées exclusivement sur le disque interne de la machine Home Assistant (perte totale si le disque crash).",
+      "1": "Exportation manuelle très rare sur un ordinateur personnel.",
+      "2": "Copie manuelle occasionnelle sur clé USB ou disque externe.",
+      "3": "Synchronisation automatique vers un stockage distant (NAS / Cloud / Stockage réseau) ou clé USB externe permanente.",
+      "4": "Sauvegarde 3-2-1 exemplaire : copie automatique chiffrée vers un stockage hors-site (Google Drive / Nextcloud / S3) + copie locale indépendante."
+    },
+    "question": "Vos sauvegardes sont-elles automatiquement copiées en dehors de votre serveur (vers un NAS, Google Drive, Nextcloud ou clé USB externe) ?",
+    "test_procedure": "1. Vérifier la présence d'une clé USB de stockage externe sur le serveur ou d'un add-on de synchronisation cloud (ex: Home Assistant Google Drive Backup).\n2. Vérifier que la dernière sauvegarde est bien présente sur le support externe.",
+    "recommendations": {
+      "0_to_1": "Brancher une clé USB externe formatée sur le serveur Home Assistant pour y rediriger les sauvegardes.",
+      "1_to_2": "Télécharger manuellement une copie de la dernière sauvegarde complète sur votre ordinateur.",
+      "2_to_3": "Installer l'intégration ou add-on de sauvegarde externe (ex: Google Drive Backup, Samba Backup ou Nextcloud).",
+      "3_to_4": "Configurer un chiffrement fort sur les sauvegardes exportées vers des services cloud distants."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Information stockage externe -> QUESTION_REQUIRED."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "RES07",
+    "domain": "RES",
+    "name": "Restauration testée",
+    "description": "La procédure de restauration d'une sauvegarde a déjà été testée et validée en situation réelle ou sur une instance de secours.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "La restauration n'a jamais été testée, aucune certitude que les archives générées soient restaurables.",
+      "1": "Restauration partielle testée une fois (ex: restauration d'un seul fichier ou add-on).",
+      "2": "Connaissance théorique de la procédure de réinstallation, mais sans test complet réalisé.",
+      "3": "Procédure de restauration complète maîtrisée et documentée étape par étape.",
+      "4": "Restauration complète testée avec succès à blanc (sur une machine de secours, VM ou après incident réel sans perte de données)."
+    },
+    "question": "Avez-vous déjà testé la restauration complète d'une sauvegarde pour valider que votre maison repart sans encombre ?",
+    "test_procedure": "1. Disposer d'une sauvegarde complète récente.\n2. Effectuer un test de restauration sur une machine de secours ou machine virtuelle de test.\n3. Vérifier que l'ensemble des intégrations et dashboards redémarrent correctement.",
+    "recommendations": {
+      "0_to_1": "Rédiger sur une feuille de papier ou un document externe les 4 étapes pour réinstaller Home Assistant et injecter une sauvegarde.",
+      "1_to_2": "Tester la restauration d'un add-on ou d'une sauvegarde partielle pour valider le mécanisme.",
+      "2_to_3": "Effectuer un test de restauration complète sur une seconde machine, clé USB ou machine virtuelle de test.",
+      "3_to_4": "Formaliser une fiche réflexe d'urgence indiquant l'emplacement des sauvegardes et le mot de passe de déchiffrement."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Information humaine non automatisable -> QUESTION_REQUIRED."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "RES08",
+    "domain": "RES",
+    "name": "Continuité électrique",
+    "description": "Stratégie face aux microcoupures et coupures de courant (onduleur / UPS sur serveur et équipements réseau, arrêt propre automatisé).",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Aucune protection électrique : la box et le serveur s'éteignent brutalement à la moindre microcoupure secteur (risque de corruption de base de données).",
+      "1": "Prise parafoudre simple sans batterie de secours.",
+      "2": "Alimentation stable, système de fichiers résilient (SSD/eMMC) avec redémarrage automatique propre après coupure.",
+      "3": "Onduleur (UPS) alimentant le serveur Home Assistant et la box Internet avec autonomie de 15 à 30 minutes.",
+      "4": "Onduleur supervisé avec communication USB/NUT vers Home Assistant : notification de coupure secteur + extinction propre automatique en cas de batterie basse."
+    },
+    "question": "Votre serveur Home Assistant et votre box Internet sont-ils branchés sur un onduleur (UPS) avec batterie ?",
+    "test_procedure": "1. Vérifier la présence d'un onduleur alimentant le serveur et la box.\n2. Vérifier si l'intégration NUT (Network UPS Tools) ou APCUPSD remonte l'état de la batterie dans Home Assistant.",
+    "recommendations": {
+      "0_to_1": "Installer une prise parasurtenseur de qualité pour protéger le matériel des surtensions réseau.",
+      "1_to_2": "Utiliser un stockage robuste (eMMC industrielle ou SSD) pour réduire les risques de corruption lors des coupures franches.",
+      "2_to_3": "Acquérir un onduleur compact (650VA-1000VA) pour sécuriser l'alimentation du serveur et du routeur Wi-Fi.",
+      "3_to_4": "Raccorder le câble USB de l'onduleur au serveur et activer l'intégration NUT pour ordonner un arrêt propre avant épuisement de la batterie."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*ups*",
+        "sensor.*battery*"
+      ],
+      "integrations": [
+        "nut",
+        "apcupsd",
+        "snmp"
+      ],
+      "description": "Détection d'une intégration d'onduleur connectée."
+    },
+    "model_version": "1.0"
+  }
+]

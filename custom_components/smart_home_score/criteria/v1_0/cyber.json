@@ -1,0 +1,261 @@
+[
+  {
+    "id": "CYBER01",
+    "domain": "CYBER",
+    "name": "Accès distant sécurisé",
+    "description": "L'accès à distance à Home Assistant utilise un protocole chiffré sécurisé (HTTPS avec certificat valide, Cloudflare Access, Nabu Casa ou VPN chiffré) sans redirection de port HTTP brut.",
+    "weight": 15,
+    "critical": true,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Accès distant en HTTP non chiffré ou redirection de port direct non sécurisée sans certificat.",
+      "1": "Accès distant avec certificat auto-signé ou redirection de port sans protection anti-bruteforce amont.",
+      "2": "HTTPS avec certificat valide (Let's Encrypt / DuckDNS) et redirection de port classique.",
+      "3": "Accès distant sécurisé via tunnel chiffré sans port ouvert sur la box (Nabu Casa, VPN Wireguard/Tailscale).",
+      "4": "Accès distant haute sécurité avec couche d'authentification amont (Cloudflare Access / Zero Trust / mTLS)."
+    },
+    "question": "Comment accédez-vous à votre Home Assistant depuis l'extérieur (Nabu Casa, Cloudflare Tunnel, VPN ou redirection de port) ?",
+    "test_procedure": "1. Tester l'accès externe en 4G/5G hors du réseau Wi-Fi.\n2. Vérifier la présence du cadenas vert HTTPS et la validité du certificat SSL.\n3. Vérifier qu'aucun port HTTP 80/8123 brut n'est exposé sans chiffrement.",
+    "recommendations": {
+      "0_to_1": "Arrêter immédiatement toute redirection de port HTTP direct sans chiffrement TLS.",
+      "1_to_2": "Mettre en place un certificat SSL/TLS valide avec renouvellement automatique.",
+      "2_to_3": "Migrer vers un tunnel sécurisé sans ouverture de port entrant (Home Assistant Cloud ou VPN WireGuard/Tailscale).",
+      "3_to_4": "Ajouter une couche d'authentification Zero Trust (ex: Cloudflare Access) en amont de Home Assistant."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [
+        "cloud"
+      ],
+      "description": "Vérification de l'état de Nabu Casa Cloud ou de la configuration réseau."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "CYBER02",
+    "domain": "CYBER",
+    "name": "Authentification renforcée",
+    "description": "Activation de l'authentification à deux facteurs (2FA / TOTP) sur les comptes administrateurs de Home Assistant.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Mots de passe faibles, partagés ou par défaut sans aucune double authentification.",
+      "1": "Mots de passe uniques mais 2FA désactivé sur tous les comptes.",
+      "2": "2FA configuré sur au moins un compte mais pas sur l'ensemble des administrateurs.",
+      "3": "2FA (TOTP / Clé de sécurité) actif et obligatoire sur le compte administrateur principal.",
+      "4": "2FA actif sur 100 % des comptes administrateurs avec codes de secours conservés hors ligne."
+    },
+    "question": "Avez-vous activé la double authentification (2FA / TOTP) sur votre compte administrateur Home Assistant ?",
+    "test_procedure": "1. Aller dans Profil utilisateur Home Assistant.\n2. Vérifier dans la section 'Modules d'authentification' que l'application d'authentification à 2 facteurs (TOTP) est active.",
+    "recommendations": {
+      "0_to_1": "Définir des mots de passe robustes et distincts pour chaque utilisateur de Home Assistant.",
+      "1_to_2": "Activer le module 2FA (TOTP) dans votre profil Home Assistant à l'aide d'une application comme Aegis, Bitwarden ou Google Authenticator.",
+      "2_to_3": "Généraliser l'activation du 2FA à tous les comptes disposant des droits d'administration.",
+      "3_to_4": "Enregistrer et stocker les codes de récupération 2FA dans un coffre-fort de mots de passe sécurisé."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Information non accessible via API publique -> QUESTION_REQUIRED."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "CYBER03",
+    "domain": "CYBER",
+    "name": "Comptes individualisés",
+    "description": "Chaque membre du foyer dispose d'un compte utilisateur dédié et distinct sans partage d'un compte unique.",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Un seul compte partagé par toutes les personnes du foyer et tous les appareils.",
+      "1": "Deux comptes existants mais usage fréquent du même compte sur plusieurs appareils personnels.",
+      "2": "Comptes individualisés pour les adultes, mais compte générique partagé pour les enfants/tablettes.",
+      "3": "Comptes individuels pour chaque membre de la famille + compte tablette murale dédié restreint.",
+      "4": "Gestion complète des comptes : utilisateurs individualisés, compte invité éphémère et compte tablette dédié."
+    },
+    "question": "Chaque personne du foyer possède-t-elle son propre compte utilisateur Home Assistant ?",
+    "test_procedure": "1. Aller dans Paramètres → Personnes → Utilisateurs.\n2. Vérifier la liste des comptes enregistrés.",
+    "recommendations": {
+      "0_to_1": "Créer au moins un compte secondaire pour séparer l'administrateur technique des utilisateurs du foyer.",
+      "1_to_2": "Créer un compte dédié pour chaque conjoint ou membre de la famille.",
+      "2_to_3": "Créer un utilisateur dédié non-administrateur pour les tablettes murales et écrans partagés.",
+      "3_to_4": "Mettre en place des dashboards personnalisés selon les profils utilisateurs."
+    },
+    "auto_requirements": {
+      "entities": [
+        "person.*"
+      ],
+      "integrations": [
+        "person"
+      ],
+      "description": "Comptage des personnes et utilisateurs déclarés dans Home Assistant."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "CYBER04",
+    "domain": "CYBER",
+    "name": "Principe du moindre privilège",
+    "description": "Les utilisateurs ordinaires et terminaux partagés (tablettes murales, invités) ne disposent pas des privilèges administrateur.",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Tous les utilisateurs et tablettes sont créés avec les droits Administrateur complets.",
+      "1": "La majorité des utilisateurs sont administrateurs sans justification technique.",
+      "2": "Seul le gestionnaire est administrateur, mais la tablette murale partagée reste sur un compte admin.",
+      "3": "Droits administrateurs restreints au seul gestionnaire technique, autres membres en statut Utilisateur.",
+      "4": "Moindre privilège strict : 1 seul compte admin protégé, utilisateurs standard limités à leurs dashboards, tablettes verrouillées."
+    },
+    "question": "Le statut Administrateur est-il réservé au seul gestionnaire technique de l'installation ?",
+    "test_procedure": "1. Aller dans Paramètres → Personnes → Utilisateurs.\n2. Vérifier qu'un seul compte possède le badge 'Administrateur'.",
+    "recommendations": {
+      "0_to_1": "Rétrograder les comptes des membres de la famille au rôle 'Utilisateur standard'.",
+      "1_to_2": "Vérifier que les comptes utilisés sur les tablettes murales ne sont pas administrateurs.",
+      "2_to_3": "Créer un compte d'administration distinct pour les tâches de maintenance technique.",
+      "3_to_4": "Restreindre la visibilité des vues d'administration aux seuls comptes habilités."
+    },
+    "auto_requirements": {
+      "entities": [
+        "person.*"
+      ],
+      "integrations": [
+        "person"
+      ],
+      "description": "Vérification des rôles d'administration dans le registre des utilisateurs."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "CYBER05",
+    "domain": "CYBER",
+    "name": "Gestion des secrets",
+    "description": "Les mots de passe, tokens et clés d'API sont absents des dashboards publics et protégés dans des variables sécurisées.",
+    "weight": 15,
+    "critical": true,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Des mots de passe, tokens ou clés privées apparaissent en clair dans les dashboards Lovelace ou notifications.",
+      "1": "Secrets en clair dans certains scripts ou automatisations partagées.",
+      "2": "Majorité des clés isolées mais quelques tokens résiduels visibles dans des templates.",
+      "3": "Aucun token ni mot de passe n'apparaît dans les dashboards, cartes ou entités exposées.",
+      "4": "Gestion rigoureuse des secrets : aucun identifiant exposé, utilisation stricte des mécanismes d'authentification natifs."
+    },
+    "question": "Avez-vous vérifié qu'aucun mot de passe, token ou clé API n'apparaît en clair dans vos dashboards ou automatisations ?",
+    "test_procedure": "1. Inspecter vos dashboards Lovelace et vérifier qu'aucune clé API ou mot de passe n'est affiché dans les cartes Markdown.\n2. Vérifier que les messages de notification n'incluent pas d'identifiants sensibles.",
+    "recommendations": {
+      "0_to_1": "Supprimer immédiatement tout mot de passe ou token présent dans le texte des dashboards ou notifications.",
+      "1_to_2": "Déplacer les clés API résiduelles vers des intégrations natives gérant l'authentification de manière sécurisée.",
+      "2_to_3": "Vérifier la configuration des webhooks pour ne pas exposer de clés privées dans les URL publiques.",
+      "3_to_4": "Procéder à une revue périodique des entités exposées pour s'assurer de l'absence de données sensibles."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Zéro lecture de secrets.yaml -> QUESTION_REQUIRED."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "CYBER06",
+    "domain": "CYBER",
+    "name": "Mises à jour",
+    "description": "Home Assistant Core, le système d'exploitation et les modules complémentaires sont maintenus régulièrement à jour.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Aucune mise à jour effectuée depuis plus d'un an, failles de sécurité connues non corrigées.",
+      "1": "Mises à jour très occasionnelles (> 6 mois de retard) et sans sauvegarde préalable.",
+      "2": "Mises à jour trimestrielles mais sans routine de validation des 'Breaking Changes'.",
+      "3": "Mises à jour mensuelles régulières appliquées après réalisation et vérification d'une sauvegarde.",
+      "4": "Politique de mise à jour exemplaire : suivi mensuel des versions stables, lecture des notes de version et backup systématique."
+    },
+    "question": "Appliquez-vous régulièrement les mises à jour de Home Assistant et de ses composants après avoir effectué une sauvegarde ?",
+    "test_procedure": "1. Aller dans Paramètres → Système → Mises à jour.\n2. Constater la version courante de Home Assistant Core et du système d'exploitation.",
+    "recommendations": {
+      "0_to_1": "Mettre à jour Home Assistant vers la dernière version mensuelle stable après avoir créé une sauvegarde complète.",
+      "1_to_2": "Adopter un rythme de mise à jour au moins trimestriel.",
+      "2_to_3": "Planifier une routine mensuelle de mise à jour vers la fin de chaque mois (ex: version 2026.X.2 ou supérieure).",
+      "3_to_4": "Lire systématiquement les 'Breaking Changes' avant d'appliquer une mise à jour majeure."
+    },
+    "auto_requirements": {
+      "entities": [
+        "update.*"
+      ],
+      "integrations": [
+        "update"
+      ],
+      "description": "Vérification des entités update disponibles et des versions de Core/OS."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "CYBER07",
+    "domain": "CYBER",
+    "name": "Exposition réseau IoT",
+    "description": "L'exposition réseau et Internet des objets connectés est limitée au strict nécessaire (isolation VLAN, Wi-Fi IoT ou filtrage box).",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Tous les objets connectés (y compris caméras cloud non vérifiées) partagent le même réseau local sans aucun filtrage.",
+      "1": "Réseau unique avec règles UPnP actives autorisant l'ouverture automatique de ports sortants.",
+      "2": "Réseau standard avec UPnP désactivé et filtrage NAT classique sur la box Internet.",
+      "3": "Objets connectés Wi-Fi isolés sur un réseau Wi-Fi invité ou règles de pare-feu limitant l'accès au réseau principal.",
+      "4": "Isolation réseau avancée : VLAN IoT dédié sans accès au réseau informatique principal ni accès WAN non maîtrisé."
+    },
+    "question": "Vos objets connectés (caméras, ampoules Wi-Fi) sont-ils isolés sur un réseau Wi-Fi dédié (invité / VLAN) ou protégés par votre routeur ?",
+    "test_procedure": "1. Vérifier dans la console de gestion de votre box/routeur la présence d'un réseau Wi-Fi invité/IoT ou de règles de segmentation VLAN.\n2. Vérifier que l'UPnP est désactivé sur le routeur.",
+    "recommendations": {
+      "0_to_1": "Désactiver l'UPnP sur la box Internet pour empêcher les ouvertures de ports automatiques par des équipements tiers.",
+      "1_to_2": "Activer le réseau Wi-Fi Invité de votre box pour y connecter les périphériques Wi-Fi tiers.",
+      "2_to_3": "Isoler les objets connectés Wi-Fi (prises, caméras, aspirateurs) sur un SSID distinct.",
+      "3_to_4": "Mettre en place une segmentation VLAN avec règles de filtrage inter-VLAN sur un routeur géré."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Information réseau non accessible par API publique -> QUESTION_REQUIRED."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "CYBER08",
+    "domain": "CYBER",
+    "name": "Surveillance sécurité",
+    "description": "Surveillance active des notifications système, échecs d'authentification et alertes de sécurité.",
+    "weight": 10,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Aucune consultation des journaux système ni des alertes de sécurité Home Assistant.",
+      "1": "Consultation des logs uniquement en cas de panne bloquante.",
+      "2": "Vérification occasionnelle des notifications système et réparations suggérées dans l'interface.",
+      "3": "Surveillance régulière des alertes de sécurité et notifications d'échec de connexion.",
+      "4": "Supervision active : notifications push instantanées en cas de tentatives de connexion anormales ou réparations de sécurité requises."
+    },
+    "question": "Consultez-vous régulièrement les alertes de sécurité (menu Réparations) et surveillez-vous les tentatives de connexion anormales ?",
+    "test_procedure": "1. Aller dans Paramètres → Système → Réparations.\n2. Vérifier l'absence d'alertes de sécurité non traitées.",
+    "recommendations": {
+      "0_to_1": "Consulter l'onglet 'Réparations' dans les paramètres Home Assistant au moins une fois par mois.",
+      "1_to_2": "Traiter les avertissements de sécurité et certificats obsolètes signalés par Home Assistant.",
+      "2_to_3": "Configurer une automatisation d'alerte lors de la détection de réparations système critiques.",
+      "3_to_4": "Mettre en place une notification instantanée sur smartphone lors de tentatives de connexion invalides répétées (intégration `ip_ban` ou proxy)."
+    },
+    "auto_requirements": {
+      "entities": [
+        "sensor.*",
+        "persistent_notification.*"
+      ],
+      "integrations": [
+        "repairs"
+      ],
+      "description": "Vérification des réparations et notifications système actives."
+    },
+    "model_version": "1.0"
+  }
+]

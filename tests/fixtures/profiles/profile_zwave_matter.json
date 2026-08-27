@@ -1,0 +1,27 @@
+{
+  "description": "Installation moderne combinant protocoles locaux Z-Wave JS et Matter Thread.",
+  "total_entities": 160,
+  "total_devices": 48,
+  "total_areas": 6,
+  "integrations_present": [
+    "zwave_js",
+    "matter",
+    "backup"
+  ],
+  "local_integrations": [
+    "zwave_js",
+    "matter",
+    "backup"
+  ],
+  "cloud_integrations": [],
+  "lights_count": 18,
+  "switches_count": 12,
+  "climates_count": 5,
+  "binary_sensors_count": 22,
+  "sensors_count": 40,
+  "automations_count": 30,
+  "has_zwave": true,
+  "has_matter": true,
+  "has_solar_production": false,
+  "has_ups_monitoring": true
+}

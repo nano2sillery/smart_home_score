@@ -1,0 +1,202 @@
+[
+  {
+    "id": "INTER01",
+    "domain": "INTER",
+    "name": "Protocoles locaux",
+    "description": "Utilisation prioritaire de protocoles domotiques locaux sans dépendance cloud (Zigbee, Matter, Z-Wave, ESPHome, MQTT, Modbus, API locales).",
+    "weight": 20,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Plus de 80 % des équipements dépendent exclusivement de clouds propriétaires.",
+      "1": "Majorité d'équipements cloud avec quelques périphériques locaux isolés.",
+      "2": "Environ 50 % d'équipements locaux et 50 % d'équipements dépendants du cloud.",
+      "3": "Plus de 80 % des appareils communiquent via des protocoles 100% locaux (Zigbee, Matter, ESPHome, Shelly local).",
+      "4": "Installation d'excellence : plus de 95 % des équipements sont en communication locale directe sans aucun pont cloud obligatoire."
+    },
+    "question": "Vos équipements domotiques fonctionnent-ils en majorité via des protocoles locaux (Zigbee, Matter, ESPHome, MQTT) ?",
+    "test_procedure": "1. Examiner la liste des intégrations dans Paramètres → Appareils et Services.\n2. Vérifier le ratio d'intégrations locales (Local Push / Local Polling) par rapport aux intégrations Cloud Polling / Cloud Push.",
+    "recommendations": {
+      "0_to_1": "Privilégier le protocole Zigbee ou Matter lors de vos prochains achats de capteurs et micromodules.",
+      "1_to_2": "Activer le contrôle local sur les modules Wi-Fi compatibles (Shelly, Tasmota, ESPHome).",
+      "2_to_3": "Remplacer progressivement les ampoules et prises Wi-Fi cloud par du matériel Zigbee 3.0.",
+      "3_to_4": "Éliminer les dernières dépendances cloud sur les actionneurs de commande de base."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [
+        "zha",
+        "zigbee2mqtt",
+        "matter",
+        "esphome",
+        "mqtt",
+        "shelly"
+      ],
+      "description": "Ratio d'intégrations locales dans le registre."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "INTER02",
+    "domain": "INTER",
+    "name": "Dépendance au Cloud",
+    "description": "Les fonctions vitales de la maison (éclairage, chauffage, ouvrants, sécurité) ne dépendent d'aucun cloud constructeur pour leur fonctionnement quotidien.",
+    "weight": 20,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Les fonctions de base (lumières, volets, chauffage) dépendent entièrement de serveurs distants constructeurs.",
+      "1": "Chauffage ou volets dépendants du cloud, éclairages locaux.",
+      "2": "Fonctions de base locales, mais certains capteurs de présence ou météo indispensables dépendent du cloud.",
+      "3": "100 % des commandes d'éclairage, volets et chauffage fonctionnent en local sans aucun cloud constructeur.",
+      "4": "Indépendance cloud totale : aucune fonction domestique vitale ou de confort ne requiert de service distant."
+    },
+    "question": "Vos fonctions essentielles (lumières, volets, chauffage) peuvent-elles continuer à fonctionner si un constructeur ferme ses serveurs ?",
+    "test_procedure": "1. Vérifier qu'aucune passerelle propriétaire cloud (ex: Tuya cloud, Somfy cloud) n'est requise pour actionner les lumières ou volets.",
+    "recommendations": {
+      "0_to_1": "Remplacer les intégrations cloud Tuya/SmartLife par l'intégration locale Tuya Local ou migrer vers Zigbee.",
+      "1_to_2": "Préférer les modules de volets locaux aux box fermées constructeurs.",
+      "2_to_3": "Vérifier que les thermostats peuvent être pilotés via une passerelle locale (ex: Zigbee, Modbus ou relais sec).",
+      "3_to_4": "Auditer annuellement les intégrations actives pour maintenir l'indépendance cloud."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Comptage des intégrations taguées 'Cloud' gérant des lumières, volets ou chauffage."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "INTER03",
+    "domain": "INTER",
+    "name": "Remplaçabilité du matériel",
+    "description": "Utilisation d'une couche d'abstraction (groupes d'entités, templates, scripts intermédiaires) permettant de remplacer un équipement physique défaillant sans modifier toutes les automatisations.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "QUESTION",
+    "levels": {
+      "0": "Les adresses brutes d'entités matérielles sont codées en dur dans des dizaines d'automatisations et dashboards : le remplacement d'un module oblige à tout réécrire.",
+      "1": "Quelques groupes existent mais la majorité des automatisations ciblent des entités matérielles directes.",
+      "2": "Groupes d'éclairages utilisés, mais volets et capteurs appelés directement par leurs identifiants matériels.",
+      "3": "Organisation découplée : utilisation systématique de groupes, labels, zones ou templates pour piloter les fonctions.",
+      "4": "Architecture d'abstraction exemplaire : le remplacement d'un composant physique se fait en modifiant un seul groupe/label sans toucher à aucun scénario."
+    },
+    "question": "Si une ampoule ou un capteur tombe en panne, pouvez-vous le remplacer facilement sans devoir modifier toutes vos automatisations ?",
+    "test_procedure": "1. Examiner vos automatisations : font-elles référence à des groupes (ex: `light.salon_toutes`) ou des labels plutôt qu'à 10 identifiants matériels individuels ?",
+    "recommendations": {
+      "0_to_1": "Créer des groupes de lumières par pièce (Paramètres → Appareils & Services → Helpers → Groupe).",
+      "1_to_2": "Remplacer les listes d'entités individuelles dans vos automatisations par le groupe de pièce correspondant.",
+      "2_to_3": "Utiliser les nouvelles fonctionnalités de 'Labels' et 'Zones' de Home Assistant pour cibler dynamiquement les appareils.",
+      "3_to_4": "Créer des entités template intermédiaires pour les capteurs critiques (ex: thermomètre moyen du salon)."
+    },
+    "auto_requirements": {
+      "entities": [
+        "group.*",
+        "light.group*"
+      ],
+      "integrations": [
+        "group"
+      ],
+      "description": "Présence de groupes et entités d'abstraction."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "INTER04",
+    "domain": "INTER",
+    "name": "Organisation Home Assistant",
+    "description": "Organisation rigoureuse et cohérente de Home Assistant : affectation de chaque appareil et entité à sa pièce (Zone/Area), labels et catégories.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Aucune zone/pièce créée, tous les appareils sont dans l'état par défaut non attribué.",
+      "1": "Moins de 50 % des appareils sont affectés à une pièce.",
+      "2": "La majorité des appareils sont affectés à une pièce, mais de nombreuses entités orphelines subsistent.",
+      "3": "Plus de 90 % des appareils et entités sont rigoureusement attribués à leur pièce avec des icônes appropriées.",
+      "4": "Organisation parfaite : 100 % des appareils et entités sont affectés à leur zone, avec labels thématiques et catégories fonctionnelles complètes."
+    },
+    "question": "Tous vos appareils et entités sont-ils correctement affectés à leur pièce dans Home Assistant ?",
+    "test_procedure": "1. Aller dans Paramètres → Zones & Pièces.\n2. Vérifier que la liste des appareils non affectés est vide.",
+    "recommendations": {
+      "0_to_1": "Créer les pièces principales de la maison dans Paramètres → Zones & Pièces.",
+      "1_to_2": "Affecter systématiquement chaque nouvel appareil à sa pièce lors de son appairage.",
+      "2_to_3": "Attribuer une pièce à l'ensemble des entités résiduelles non affectées.",
+      "3_to_4": "Ajouter des labels (ex: 'Éclairage', 'Chauffage', 'Sécurité', 'Batterie') pour filtrer facilement vos équipements."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [
+        "area"
+      ],
+      "description": "Pourcentage d'appareils et d'entités affectés à une Area."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "INTER05",
+    "domain": "INTER",
+    "name": "Standardisation",
+    "description": "Les protocoles et équipements utilisés reposent sur des standards ouverts interopérables (Zigbee 3.0, Matter, Thread, ESPHome, MQTT, OpenTherm) évitant l'enfermement propriétaire.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Empilement hétéroclite de protocoles fermés et de passerelles incompatibles entre elles.",
+      "1": "Usage prédominant de protocoles fermés avec quelques équipements standardisés.",
+      "2": "Coexistence de standards ouverts (Zigbee) et de protocoles propriétaires.",
+      "3": "Standardisation avancée : plus de 80 % du parc repose sur des standards ouverts universels.",
+      "4": "Standardisation exemplaire : 100 % des équipements reposent sur des protocoles ouverts interopérables pouvant être gérés par n'importe quelle passerelle du marché."
+    },
+    "question": "Vos équipements utilisent-ils des standards ouverts universels (Zigbee 3.0, Matter, MQTT, ESPHome) évitant l'enfermement ?",
+    "test_procedure": "1. Vérifier la proportion d'équipements Zigbee 3.0, Matter ou ESPHome par rapport aux protocoles propriétaires fermés.",
+    "recommendations": {
+      "0_to_1": "Bannir les protocoles radio propriétaires fermés pour tout nouvel achat.",
+      "1_to_2": "Adopter Zigbee 3.0 ou Matter comme standard principal pour les capteurs et l'éclairage.",
+      "2_to_3": "Migrer les ponts propriétaires vers un coordinateur universel Zigbee ou Matter Thread.",
+      "3_to_4": "Privilégier le matériel personnalisable et ouvert (ex: ESPHome)."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [
+        "zha",
+        "zigbee2mqtt",
+        "matter",
+        "esphome",
+        "mqtt"
+      ],
+      "description": "Comptage des intégrations standardisées."
+    },
+    "model_version": "1.0"
+  },
+  {
+    "id": "INTER06",
+    "domain": "INTER",
+    "name": "Intégration centralisée",
+    "description": "Home Assistant sert de chef d'orchestre unique : l'ensemble des systèmes de la maison sont pilotés et supervisés depuis une plateforme centrale.",
+    "weight": 15,
+    "critical": false,
+    "default_evaluation_type": "AUTO",
+    "levels": {
+      "0": "Multiples applications mobiles indépendantes sans aucune passerelle ni centralisation.",
+      "1": "Home Assistant installé mais gérant moins de 30 % des équipements de la maison.",
+      "2": "Home Assistant centralise les lumières et volets mais le chauffage ou l'alarme restent sur des applications tierces isolées.",
+      "3": "Home Assistant centralise plus de 80 % des équipements et sert d'interface de pilotage principale pour le foyer.",
+      "4": "Chef d'orchestre total : 100 % des sous-systèmes (énergie, confort, sécurité, multimédia, ouvrants, arrosage) convergent dans Home Assistant avec synchronisation transversale."
+    },
+    "question": "Home Assistant est-il le chef d'orchestre centralisant l'ensemble des systèmes de votre maison ?",
+    "test_procedure": "1. Vérifier que la famille n'a pas besoin d'ouvrir 5 applications différentes pour piloter le chauffage, les lumières et l'énergie.",
+    "recommendations": {
+      "0_to_1": "Intégrer les passerelles existantes (ampoules, prises) dans Home Assistant.",
+      "1_to_2": "Raccorder le système de chauffage et la météo à Home Assistant.",
+      "2_to_3": "Intégrer les données d'énergie et de sécurité pour centraliser toutes les informations.",
+      "3_to_4": "Faire de Home Assistant l'unique point d'entrée pour les commandes automatiques et manuelles."
+    },
+    "auto_requirements": {
+      "entities": [],
+      "integrations": [],
+      "description": "Nombre de domaines fonctionnels couverts dans Home Assistant."
+    },
+    "model_version": "1.0"
+  }
+]
