@@ -1,5 +1,11 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.4] - 2026-08-27
+### Corrigé (Assistant d'Audit Interactif Intégré)
+- **Déclenchement Interactif Immédiat** : Le bouton *« 🚀 Lancer mon premier audit »* ouvre immédiatement le questionnaire interactif pas-à-pas directement sur la carte Lovelace.
+- **Formulation Naturelle des Choix** : 🟢 Oui totalement, 🟡 Partiellement, 🔴 Non, ⚪ Je ne sais pas / Plus tard.
+- **Progression et Navigation Fluide** : Jauge de progression par question, passage fluide vers le cockpit final avec score global et bilan par domaine.
+
 ## [0.7.0-beta.3] - 2026-08-27
 ### Amélioration (Frontend Auto-Loader & Lovelace Discovery)
 - **Auto-enregistrement Lovelace Resources** : Enregistrement automatique dans la collection des ressources Lovelace Home Assistant lors du démarrage de l'intégration pour un chargement instantané sans rechargement forcé de page.

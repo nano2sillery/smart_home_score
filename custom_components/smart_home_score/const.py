@@ -3,7 +3,7 @@ from typing import Final
 
 DOMAIN: Final = "smart_home_score"
 NAME: Final = "Smart Home Score"
-VERSION: Final = "0.7.0-beta.3"
+VERSION: Final = "0.7.0-beta.4"
 MODEL_VERSION: Final = "1.0"
 AUTHOR: Final = "Cyrille LEFRANC"
 MIN_HA_VERSION: Final = "2024.7.0"
