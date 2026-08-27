@@ -1,12 +1,12 @@
 /**
- * Smart Home Score Lovelace Custom Card (v0.7.0-beta.5)
+ * Smart Home Score Lovelace Custom Card (v0.7.0-beta.6)
  * Author: Cyrille LEFRANC
  * 100% Local Lovelace Card for Home Assistant.
- * Interactive Step-by-Step Human Audit Interview, Live Scoring, Domain Breakdown & Advisor.
+ * Intelligent Automated System Scanner, Assisted Pre-filled Proposals, Live Scoring & Human Audit.
  */
 
 console.info(
-  '%c SMART-HOME-SCORE %c v0.7.0-beta.5 ',
+  '%c SMART-HOME-SCORE %c v0.7.0-beta.6 ',
   'color: white; background: #3b82f6; font-weight: 700; border-radius: 3px 0 0 3px;',
   'color: #3b82f6; background: #1e293b; font-weight: 700; border-radius: 0 3px 3px 0;'
 );
@@ -1916,7 +1916,7 @@ class SmartHomeScoreCard extends HTMLElement {
     super();
     this._config = {};
     this._hass = null;
-    this._view = 'welcome'; // 'welcome' | 'audit' | 'cockpit'
+    this._view = 'welcome'; // 'welcome' | 'scanning' | 'discovery' | 'audit' | 'cockpit'
     this._activeTab = 'overview';
     this._currentQuestionIndex = 0;
     this._showWhy = false;
@@ -1951,6 +1951,23 @@ class SmartHomeScoreCard extends HTMLElement {
     }
     const states = Object.values(this._hass.states);
     return states.find(s => s.entity_id.startsWith('sensor.') && s.entity_id.includes(suffix)) || null;
+  }
+
+  _getCriteriaStates() {
+    const globalScoreSensor = this._getEntity('global_score');
+    return globalScoreSensor?.attributes?.criteria_states || {};
+  }
+
+  _getPendingCriteria() {
+    const states = this._getCriteriaStates();
+    return SHS_CRITERIA.filter(c => {
+      const st = states[c.id];
+      if (!st) return true;
+      if (st.status === 'auto_evaluated' && st.confidence >= 90 && st.effective_score !== null) {
+        return false; // Auto-evaluated with high confidence
+      }
+      return true;
+    });
   }
 
   _render() {
@@ -2069,6 +2086,57 @@ class SmartHomeScoreCard extends HTMLElement {
         .shs-btn-sec:hover {
           background: rgba(255, 255, 255, 0.15);
         }
+        .shs-btn-success {
+          background: #059669;
+        }
+        .shs-btn-success:hover {
+          background: #047857;
+        }
+        /* Scanning & Discovery Styles */
+        .shs-scan-box {
+          background: rgba(59, 130, 246, 0.08);
+          border: 1px solid rgba(59, 130, 246, 0.25);
+          border-radius: 12px;
+          padding: 24px;
+          text-align: center;
+          margin: 12px 0;
+        }
+        .shs-spinner {
+          display: inline-block;
+          width: 36px;
+          height: 36px;
+          border: 3px solid rgba(255, 255, 255, 0.15);
+          border-radius: 50%;
+          border-top-color: #60a5fa;
+          animation: spin 1s ease-in-out infinite;
+          margin-bottom: 12px;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .shs-discovery-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+          margin: 16px 0;
+        }
+        .shs-discovery-item {
+          background: rgba(0, 0, 0, 0.25);
+          border-radius: 8px;
+          padding: 12px 8px;
+          text-align: center;
+        }
+        .shs-discovery-count {
+          font-size: 1.35rem;
+          font-weight: 800;
+          color: #60a5fa;
+        }
+        .shs-discovery-label {
+          font-size: 0.75rem;
+          color: var(--shs-muted);
+          margin-top: 4px;
+          line-height: 1.25;
+        }
         /* Questionnaire Styles */
         .shs-audit-box {
           background: rgba(0, 0, 0, 0.25);
@@ -2096,6 +2164,28 @@ class SmartHomeScoreCard extends HTMLElement {
           color: #f8fafc;
           margin-bottom: 12px;
           line-height: 1.45;
+        }
+        .shs-evidence-box {
+          background: rgba(59, 130, 246, 0.12);
+          border: 1px solid rgba(59, 130, 246, 0.3);
+          border-radius: 8px;
+          padding: 12px;
+          margin-bottom: 14px;
+        }
+        .shs-evidence-header {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.82rem;
+          font-weight: 700;
+          color: #93c5fd;
+          margin-bottom: 4px;
+        }
+        .shs-evidence-text {
+          font-size: 0.85rem;
+          color: #cbd5e1;
+          line-height: 1.35;
+          margin-bottom: 10px;
         }
         .shs-why-btn {
           background: transparent;
@@ -2255,7 +2345,7 @@ class SmartHomeScoreCard extends HTMLElement {
           <div class="shs-branding">
             <span>🏠 Smart Home Score</span>
           </div>
-          <span class="shs-badge-beta">Bêta v0.7.0-beta.5</span>
+          <span class="shs-badge-beta">Bêta v0.7.0-beta.6</span>
         </div>
 
         ${this._renderCurrentView(scoreVal, completenessVal, maturityText, criticalCount, potentialGain, isProvisional)}
@@ -2271,7 +2361,7 @@ class SmartHomeScoreCard extends HTMLElement {
         <div class="shs-welcome-box">
           <div class="shs-welcome-title">Bienvenue dans Smart Home Score</div>
           <div class="shs-welcome-desc">
-            Évaluez l'autonomie, la sécurité et la résilience de votre logement en quelques questions simples et concrètes (100 % local, 0 cloud).
+            Analyse hybride intelligente : scan automatique de vos intégrations et entretien ciblé sur vos installations réelles (100 % local, 0 cloud).
           </div>
           <button class="shs-btn" id="btn-start-first-audit">
             🚀 Lancer mon premier audit
@@ -2280,10 +2370,84 @@ class SmartHomeScoreCard extends HTMLElement {
       `;
     }
 
+    if (this._view === 'scanning') {
+      return `
+        <div class="shs-scan-box">
+          <div class="shs-spinner"></div>
+          <div style="font-size:1.1rem; font-weight:700; color:#f8fafc; margin-bottom:6px;">
+            🔍 Scan automatique en cours...
+          </div>
+          <div style="font-size:0.85rem; color:var(--shs-muted); line-height:1.4;">
+            Analyse des entités, intégrations, sauvegardes, réseaux locaux et énergie...
+          </div>
+        </div>
+      `;
+    }
+
+    if (this._view === 'discovery') {
+      const states = this._getCriteriaStates();
+      const autoCount = Object.values(states).filter(s => s.status === 'auto_evaluated' && s.confidence >= 90 && s.effective_score !== null).length;
+      const capabilityCount = Object.values(states).filter(s => s.evidence && s.status !== 'auto_evaluated').length;
+      const pendingList = this._getPendingCriteria();
+
+      return `
+        <div class="shs-audit-box">
+          <div style="text-align:center; margin-bottom:12px;">
+            <div style="font-size:1.2rem; font-weight:800; color:#60a5fa;">✨ Scan de votre système terminé !</div>
+            <div style="font-size:0.85rem; color:var(--shs-muted); margin-top:4px;">
+              Smart Home Score a analysé votre configuration Home Assistant :
+            </div>
+          </div>
+
+          <div class="shs-discovery-grid">
+            <div class="shs-discovery-item" style="border:1px solid rgba(16, 185, 129, 0.3);">
+              <div class="shs-discovery-count" style="color:#34d399;">${autoCount}</div>
+              <div class="shs-discovery-label">Évalués automatiquement</div>
+            </div>
+            <div class="shs-discovery-item" style="border:1px solid rgba(245, 158, 11, 0.3);">
+              <div class="shs-discovery-count" style="color:#fbbf24;">${capabilityCount}</div>
+              <div class="shs-discovery-label">Pré-remplis avec preuves</div>
+            </div>
+            <div class="shs-discovery-item" style="border:1px solid rgba(59, 130, 246, 0.3);">
+              <div class="shs-discovery-count" style="color:#60a5fa;">${pendingList.length}</div>
+              <div class="shs-discovery-label">Questions ciblées</div>
+            </div>
+          </div>
+
+          <div style="font-size:0.85rem; color:#cbd5e1; background:rgba(0,0,0,0.2); padding:10px 14px; border-radius:8px; margin-bottom:16px; line-height:1.4;">
+            💡 <strong>Gain de temps :</strong> Les critères validés par vos intégrations sont déjà comptabilisés. Vous n'avez plus qu'à confirmer les propositions et renseigner vos installations physiques.
+          </div>
+
+          <button class="shs-btn" id="btn-start-targeted-audit">
+            🚀 Démarrer l'entretien ciblé (${pendingList.length} questions)
+          </button>
+        </div>
+      `;
+    }
+
     if (this._view === 'audit') {
-      const total = SHS_CRITERIA.length;
+      const pending = this._getPendingCriteria();
+      const total = pending.length;
+      if (total === 0) {
+        return `
+          <div class="shs-welcome-box">
+            <div class="shs-welcome-title">🎉 Tous les critères ont été traités !</div>
+            <div class="shs-welcome-desc">Votre audit est 100 % complet.</div>
+            <button class="shs-btn" id="btn-view-summary">📊 Voir mon bilan complet</button>
+          </div>
+        `;
+      }
+
       const curIdx = Math.min(this._currentQuestionIndex, total - 1);
-      const crit = SHS_CRITERIA[curIdx] || SHS_CRITERIA[0];
+      const crit = pending[curIdx] || pending[0];
+      const st = this._getCriteriaStates()[crit.id];
+      const hasEvidence = st && st.evidence;
+      const proposedScore = st?.auto_score ?? null;
+
+      let proposedOption = null;
+      if (proposedScore !== null) {
+        proposedOption = crit.options.find(o => o.score === proposedScore);
+      }
 
       return `
         <div class="shs-audit-box">
@@ -2297,6 +2461,20 @@ class SmartHomeScoreCard extends HTMLElement {
           </div>
 
           <div class="shs-question-main">${crit.question}</div>
+
+          ${hasEvidence ? `
+            <div class="shs-evidence-box">
+              <div class="shs-evidence-header">
+                <span>💡</span> <span>Observation du scan Home Assistant :</span>
+              </div>
+              <div class="shs-evidence-text">${st.evidence}</div>
+              ${proposedOption ? `
+                <button class="shs-btn shs-btn-success" data-action="score" data-score="${proposedOption.score}" style="font-size:0.88rem; padding:10px 14px;">
+                  ✅ Confirmer la proposition : « ${proposedOption.label} »
+                </button>
+              ` : ''}
+            </div>
+          ` : ''}
 
           <button class="shs-why-btn" id="btn-toggle-why">
             ℹ️ ${this._showWhy ? 'Masquer les explications' : 'Pourquoi cette question ?'}
@@ -2340,7 +2518,6 @@ class SmartHomeScoreCard extends HTMLElement {
       `;
     }
 
-    // Cockpit view
     return `
       <div class="shs-score-hero">
         <div class="shs-score-row">
@@ -2378,7 +2555,7 @@ class SmartHomeScoreCard extends HTMLElement {
           📝 Reprendre / Modifier l'entretien
         </button>
         <button class="shs-btn shs-btn-sec" id="btn-scan" style="font-size:0.85rem; width:auto;">
-          🔄 Scan
+          🔄 Rescan
         </button>
       </div>
     `;
@@ -2429,10 +2606,19 @@ class SmartHomeScoreCard extends HTMLElement {
 
   _bindEvents() {
     this.shadowRoot.getElementById('btn-start-first-audit')?.addEventListener('click', () => {
+      this._view = 'scanning';
+      this._render();
+      this._hass?.callService('smart_home_score', 'run_analysis', {});
+      setTimeout(() => {
+        this._view = 'discovery';
+        this._render();
+      }, 1200);
+    });
+
+    this.shadowRoot.getElementById('btn-start-targeted-audit')?.addEventListener('click', () => {
       this._view = 'audit';
       this._currentQuestionIndex = 0;
       this._showWhy = false;
-      this._hass?.callService('smart_home_score', 'run_analysis', {});
       this._render();
     });
 
@@ -2441,10 +2627,11 @@ class SmartHomeScoreCard extends HTMLElement {
       this._render();
     });
 
-    this.shadowRoot.querySelectorAll('.shs-ans-btn').forEach(btn => {
+    this.shadowRoot.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const action = e.currentTarget.getAttribute('data-action');
-        const crit = SHS_CRITERIA[this._currentQuestionIndex];
+        const pending = this._getPendingCriteria();
+        const crit = pending[this._currentQuestionIndex];
         if (crit) {
           if (action === 'skip') {
             this._hass?.callService('smart_home_score', 'skip_question', { criterion_id: crit.id });
@@ -2455,7 +2642,7 @@ class SmartHomeScoreCard extends HTMLElement {
             this._hass?.callService('smart_home_score', 'submit_answer', { criterion_id: crit.id, answer_key: String(score) });
           }
         }
-        if (this._currentQuestionIndex < SHS_CRITERIA.length - 1) {
+        if (this._currentQuestionIndex < pending.length - 1) {
           this._currentQuestionIndex++;
           this._showWhy = false;
         } else {
@@ -2479,13 +2666,19 @@ class SmartHomeScoreCard extends HTMLElement {
     });
 
     this.shadowRoot.getElementById('btn-resume-audit')?.addEventListener('click', () => {
-      this._view = 'audit';
+      this._view = 'discovery';
       this._showWhy = false;
       this._render();
     });
 
     this.shadowRoot.getElementById('btn-scan')?.addEventListener('click', () => {
+      this._view = 'scanning';
+      this._render();
       this._hass?.callService('smart_home_score', 'run_analysis', {});
+      setTimeout(() => {
+        this._view = 'discovery';
+        this._render();
+      }, 1200);
     });
 
     this.shadowRoot.getElementById('tab-overview')?.addEventListener('click', () => {
@@ -2515,7 +2708,7 @@ const cardEntry = {
   type: 'smart-home-score-card',
   name: 'Smart Home Score',
   preview: true,
-  description: "Entretien d'audit et indice de maturité de votre maison connectée",
+  description: "Scanner automatique et entretien d'audit de votre maison connectée",
   documentationURL: 'https://github.com/nano2sillery/smart_home_score'
 };
 

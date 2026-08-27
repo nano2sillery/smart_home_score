@@ -64,6 +64,23 @@ SENSOR_DESCRIPTIONS: tuple[SmartHomeScoreSensorEntityDescription, ...] = (
             "critical_count": result.critical_count,
             "potential_gain": result.potential_gain,
             "model_version": result.model_version,
+            "auto_evaluated_count": result.auto_evaluated_count,
+            "evaluated_count": result.evaluated_count,
+            "applicable_count": result.applicable_count,
+            "total_count": result.total_count,
+            "criteria_states": {
+                cid: {
+                    "effective_score": st.effective_score,
+                    "auto_score": st.auto_score,
+                    "status": st.status.value if hasattr(st.status, "value") else str(st.status),
+                    "source": st.evaluation_source.value if hasattr(st.evaluation_source, "value") else str(st.evaluation_source),
+                    "confidence": st.confidence,
+                    "evidence": st.evidence,
+                    "applicable": st.applicable,
+                    "user_confirmed": st.user_confirmed,
+                }
+                for cid, st in result.criteria_states.items()
+            } if result.criteria_states else {},
         },
     ),
     SmartHomeScoreSensorEntityDescription(

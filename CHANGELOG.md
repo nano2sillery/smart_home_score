@@ -1,5 +1,12 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.6] - 2026-08-27
+### Scan Automatique Intelligent & Entretien Ciblé
+- **Scanner Visuel Interactif** : Lancement d'un scan automatique direct des entités, intégrations et sauvegardes dès le début.
+- **Bilan Découverte Instantané** : Affichage des critères évalués automatiquement (preuves directes), des propositions pré-remplies et du nombre de questions ciblées restantes.
+- **Filtrage Intelligent** : L'entretien ne pose plus 59 questions aveugles mais se concentre uniquement sur les éléments nécessitant une confirmation ou invisibles par logiciel.
+- **Bouton de Confirmation Rapide 1-Clic** : Validation immédiate des observations détectées par Home Assistant.
+
 ## [0.7.0-beta.5] - 2026-08-27
 ### Amélioration UX Entretien d'Audit Humain & Fidélité Référentiel v1.0
 - **Questions en Langage Naturel** : 59 questions formulées concrètement sur la vie du logement.
