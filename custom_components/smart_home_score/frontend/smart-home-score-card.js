@@ -1,547 +1,1913 @@
 /**
- * Smart Home Score Lovelace Custom Card (v0.7.0-beta.4)
+ * Smart Home Score Lovelace Custom Card (v0.7.0-beta.5)
  * Author: Cyrille LEFRANC
  * 100% Local Lovelace Card for Home Assistant.
- * Interactive Step-by-Step Audit Assistant, Live Scoring, Domain Breakdown & Advisor.
+ * Interactive Step-by-Step Human Audit Interview, Live Scoring, Domain Breakdown & Advisor.
  */
 
 console.info(
-  '%c SMART-HOME-SCORE %c v0.7.0-beta.4 ',
+  '%c SMART-HOME-SCORE %c v0.7.0-beta.5 ',
   'color: white; background: #3b82f6; font-weight: 700; border-radius: 3px 0 0 3px;',
   'color: #3b82f6; background: #1e293b; font-weight: 700; border-radius: 0 3px 3px 0;'
 );
 
 const SHS_CRITERIA = [
   {
-    "id": "AUTO01",
-    "domain": "AUTO",
-    "domain_name": "⚙️ Automatisations & Logique",
-    "title": "Éclairage intelligent",
-    "question": "Vos éclairages s'adaptent-ils automatiquement au niveau de lumière naturelle et à vos activités (mode nuit tamisé, extinction sur absence) ?",
-    "explanation": "Scénarios d'éclairage automatisés tenant compte du contexte réel : présence, horaire, luminosité ambiante, mode nuit ou pièce occupée.",
-    "critical": false
-  },
-  {
-    "id": "AUTO02",
-    "domain": "AUTO",
-    "domain_name": "⚙️ Automatisations & Logique",
-    "title": "Chauffage intelligent",
-    "question": "Votre chauffage baisse-t-il automatiquement lors d'une absence ou à l'ouverture d'une fenêtre ?",
-    "explanation": "Régulation thermique intelligente dépendant du besoin réel, des plannings familiaux, de la présence et de l'ouverture des fenêtres.",
-    "critical": false
-  },
-  {
-    "id": "AUTO03",
-    "domain": "AUTO",
-    "domain_name": "⚙️ Automatisations & Logique",
-    "title": "Ventilation intelligente",
-    "question": "Votre VMC passe-t-elle automatiquement en grande vitesse lors d'une douche puis revient-elle en vitesse normale ?",
-    "explanation": "Pilotage automatique de la VMC ou de l'aération selon l'hygrométrie de la salle de bain ou la qualité d'air (CO2/COV).",
-    "critical": false
-  },
-  {
-    "id": "AUTO04",
-    "domain": "AUTO",
-    "domain_name": "⚙️ Automatisations & Logique",
-    "title": "Gestion intelligente des volets",
-    "question": "Vos volets se ferment-ils automatiquement sur les façades ensoleillées en été pour protéger la maison de la chaleur ?",
-    "explanation": "Automatisation thermique des volets roulants : fermeture estivale anti-surchauffe au soleil et optimisation des apports solaires en hiver.",
-    "critical": false
-  },
-  {
-    "id": "AUTO05",
-    "domain": "AUTO",
-    "domain_name": "⚙️ Automatisations & Logique",
-    "title": "Gestion de l'eau",
-    "question": "En cas de détection d'eau au sol, recevez-vous une alerte immédiate et la vanne générale se coupe-t-elle automatiquement ?",
-    "explanation": "Détection précoce des fuites d'eau ou surconsommations et protection automatique par fermeture de la vanne générale.",
-    "critical": false
-  },
-  {
-    "id": "AUTO06",
-    "domain": "AUTO",
-    "domain_name": "⚙️ Automatisations & Logique",
-    "title": "Appareils domestiques",
-    "question": "Recevez-vous une notification sur votre smartphone ou enceinte vocale lorsque le lave-linge ou lave-vaisselle est terminé ?",
-    "explanation": "Suivi intelligent de la consommation et des cycles des appareils électroménagers (fin de cycle lave-linge/vaisselle, alertes puissance).",
-    "critical": false
-  },
-  {
-    "id": "AUTO07",
-    "domain": "AUTO",
-    "domain_name": "⚙️ Automatisations & Logique",
-    "title": "Présence et occupation",
-    "question": "Home Assistant sait-il si la maison est occupée ou vide de manière fiable (détection smartphone + capteurs) ?",
-    "explanation": "Le système détermine la présence et l'occupation des pièces de manière fiable en combinant plusieurs sources (GPS, Wi-Fi, capteurs de mouvement/présence).",
-    "critical": false
-  },
-  {
-    "id": "AUTO08",
-    "domain": "AUTO",
-    "domain_name": "⚙️ Automatisations & Logique",
-    "title": "Contextualisation",
-    "question": "Vos automatisations s'adaptent-elles au contexte global (jours fériés, vacances, météo, mode télétravail) ?",
-    "explanation": "Combinaison intelligente de plusieurs informations contextuelles plutôt que des horaires fixes rigides (météo, saison, mode de vie, calendrier).",
-    "critical": false
-  },
-  {
-    "id": "AUTO09",
-    "domain": "AUTO",
-    "domain_name": "⚙️ Automatisations & Logique",
-    "title": "Boucle de vérification",
-    "question": "Sur vos actions critiques (fermeture serrure, coupure vanne, arrêt chauffage), Home Assistant vérifie-t-il que l'action s'est réellement produite ?",
-    "explanation": "Contrôle si l'action domotique demandée a réellement produit le résultat attendu (vérification d'état, relance en cas d'échec ou alerte).",
-    "critical": false
-  },
-  {
-    "id": "CYBER01",
-    "domain": "CYBER",
-    "domain_name": "🔒 Cybersécurité & Réseau",
-    "title": "Accès distant sécurisé",
-    "question": "Comment accédez-vous à votre Home Assistant depuis l'extérieur (Nabu Casa, Cloudflare Tunnel, VPN ou redirection de port) ?",
-    "explanation": "L'accès à distance à Home Assistant utilise un protocole chiffré sécurisé (HTTPS avec certificat valide, Cloudflare Access, Nabu Casa ou VPN chiffré) sans redirection de port HTTP brut.",
-    "critical": true
-  },
-  {
-    "id": "CYBER02",
-    "domain": "CYBER",
-    "domain_name": "🔒 Cybersécurité & Réseau",
-    "title": "Authentification renforcée",
-    "question": "Avez-vous activé la double authentification (2FA / TOTP) sur votre compte administrateur Home Assistant ?",
-    "explanation": "Activation de l'authentification à deux facteurs (2FA / TOTP) sur les comptes administrateurs de Home Assistant.",
-    "critical": false
-  },
-  {
-    "id": "CYBER03",
-    "domain": "CYBER",
-    "domain_name": "🔒 Cybersécurité & Réseau",
-    "title": "Comptes individualisés",
-    "question": "Chaque personne du foyer possède-t-elle son propre compte utilisateur Home Assistant ?",
-    "explanation": "Chaque membre du foyer dispose d'un compte utilisateur dédié et distinct sans partage d'un compte unique.",
-    "critical": false
-  },
-  {
-    "id": "CYBER04",
-    "domain": "CYBER",
-    "domain_name": "🔒 Cybersécurité & Réseau",
-    "title": "Principe du moindre privilège",
-    "question": "Le statut Administrateur est-il réservé au seul gestionnaire technique de l'installation ?",
-    "explanation": "Les utilisateurs ordinaires et terminaux partagés (tablettes murales, invités) ne disposent pas des privilèges administrateur.",
-    "critical": false
-  },
-  {
-    "id": "CYBER05",
-    "domain": "CYBER",
-    "domain_name": "🔒 Cybersécurité & Réseau",
-    "title": "Gestion des secrets",
-    "question": "Avez-vous vérifié qu'aucun mot de passe, token ou clé API n'apparaît en clair dans vos dashboards ou automatisations ?",
-    "explanation": "Les mots de passe, tokens et clés d'API sont absents des dashboards publics et protégés dans des variables sécurisées.",
-    "critical": true
-  },
-  {
-    "id": "CYBER06",
-    "domain": "CYBER",
-    "domain_name": "🔒 Cybersécurité & Réseau",
-    "title": "Mises à jour",
-    "question": "Appliquez-vous régulièrement les mises à jour de Home Assistant et de ses composants après avoir effectué une sauvegarde ?",
-    "explanation": "Home Assistant Core, le système d'exploitation et les modules complémentaires sont maintenus régulièrement à jour.",
-    "critical": false
-  },
-  {
-    "id": "CYBER07",
-    "domain": "CYBER",
-    "domain_name": "🔒 Cybersécurité & Réseau",
-    "title": "Exposition réseau IoT",
-    "question": "Vos objets connectés (caméras, ampoules Wi-Fi) sont-ils isolés sur un réseau Wi-Fi dédié (invité / VLAN) ou protégés par votre routeur ?",
-    "explanation": "L'exposition réseau et Internet des objets connectés est limitée au strict nécessaire (isolation VLAN, Wi-Fi IoT ou filtrage box).",
-    "critical": false
-  },
-  {
-    "id": "CYBER08",
-    "domain": "CYBER",
-    "domain_name": "🔒 Cybersécurité & Réseau",
-    "title": "Surveillance sécurité",
-    "question": "Consultez-vous régulièrement les alertes de sécurité (menu Réparations) et surveillez-vous les tentatives de connexion anormales ?",
-    "explanation": "Surveillance active des notifications système, échecs d'authentification et alertes de sécurité.",
-    "critical": false
-  },
-  {
     "id": "ELEC01",
     "domain": "ELEC",
-    "domain_name": "⚡ Électricité & Alimentation",
-    "title": "Commande manuelle conservée",
-    "question": "Vos éclairages, volets et chauffages restent-ils manipulables via leurs boutons physiques quand le serveur Home Assistant est totalement éteint ?",
-    "explanation": "Les fonctions essentielles (éclairage, volets, chauffage, accès) restent utilisables localement et manuellement même si Home Assistant est arrêté ou hors service.",
-    "critical": true
+    "domain_name": "⚡ Sécurité électrique & sûreté",
+    "title": "Maintien des commandes manuelles",
+    "critical": true,
+    "question": "Pouvez-vous toujours allumer vos lumières et commander vos volets avec vos interrupteurs muraux si votre box domotique tombe en panne ?",
+    "why": "En cas de défaillance matérielle ou de plantage du serveur, les occupants et les invités doivent toujours pouvoir s'éclairer et ouvrir les volets manuellement.",
+    "options": [
+      {
+        "label": "Oui, 100 % de mes interrupteurs et boutons muraux fonctionnent de façon totalement autonome et câblée",
+        "score": 4
+      },
+      {
+        "label": "Oui pour la quasi-totalité, seuls 1 ou 2 éclairages décoratifs dépendent de l'application",
+        "score": 3
+      },
+      {
+        "label": "La plupart fonctionnent, mais plusieurs lumières ou volets importants sont bloqués sans la box",
+        "score": 2
+      },
+      {
+        "label": "Très peu d'interrupteurs physiques : la majorité des commandes impose d'utiliser un smartphone",
+        "score": 1
+      },
+      {
+        "label": "Non, la maison est paralysée sans la box domotique",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "ELEC02",
     "domain": "ELEC",
-    "domain_name": "⚡ Électricité & Alimentation",
+    "domain_name": "⚡ Sécurité électrique & sûreté",
     "title": "Dimensionnement des actionneurs",
-    "question": "Vos consommateurs de forte puissance (chauffe-eau, chauffage, recharge) sont-ils relayés par des contacteurs de puissance adaptés au tableau électrique ?",
-    "explanation": "Les modules, relais, contacteurs et prises connectées sont adaptés à la puissance admissible et protégés par un disjoncteur de calibre approprié.",
-    "critical": true
+    "critical": true,
+    "question": "Les modules et prises connectées qui pilotent vos appareils gourmands (radiateurs, chauffe-eau, four, lave-linge) sont-ils prévus pour supporter leur puissance maximale ?",
+    "why": "Un micromodule sous-dimensionné qui pilote une charge trop forte peut surchauffer, souder ses contacts électriques ou provoquer un départ de feu.",
+    "options": [
+      {
+        "label": "Oui, tous les gros consommateurs passent par des contacteurs de puissance ou des modules industriels largement dimensionnés",
+        "score": 4
+      },
+      {
+        "label": "Oui, les puissances ont été vérifiées et respectent les limites recommandées par les fabricants",
+        "score": 3
+      },
+      {
+        "label": "Les puissances sont respectées pour la plupart, mais quelques appareils chauffent un peu lors d'un usage prolongé",
+        "score": 2
+      },
+      {
+        "label": "Certains modules compacts pilotent directement de gros radiateurs ou appareils sans contacteur relais",
+        "score": 1
+      },
+      {
+        "label": "Aucune vérification des puissances : risque de surchauffe ou de soudure des relais internes",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "ELEC03",
     "domain": "ELEC",
-    "domain_name": "⚡ Électricité & Alimentation",
-    "title": "États sûrs après redémarrage",
-    "question": "Avez-vous configuré le comportement au retour du courant (Power-on state) sur vos modules connectés pour éviter tout allumage involontaire ?",
-    "explanation": "Après coupure électrique ou redémarrage d'un module, retour dans un état défini et non dangereux (Power-on state configuré).",
-    "critical": false
+    "domain_name": "⚡ Sécurité électrique & sûreté",
+    "title": "États sûrs au redémarrage",
+    "critical": false,
+    "question": "Après une coupure de courant, vos prises et éclairages connectés reprennent-ils un état sécurisé (par exemple rester éteints ou reprendre leur état précédent) ?",
+    "why": "Évite qu'un radiateur d'appoint ou une plaque de cuisson ne s'allume tout seul après le rétablissement du courant en votre absence.",
+    "options": [
+      {
+        "label": "Oui, chaque module est configuré individuellement avec un état sûr défini après coupure (mémoire d'état ou maintien éteint)",
+        "score": 4
+      },
+      {
+        "label": "La majorité des modules est configurée pour reprendre son état antérieur avant coupure",
+        "score": 3
+      },
+      {
+        "label": "Comportement par défaut des modules conservé sans configuration personnalisée",
+        "score": 2
+      },
+      {
+        "label": "Certains appareils s'allument à 100 % en pleine nuit après une micro-coupure",
+        "score": 1
+      },
+      {
+        "label": "Comportement totalement imprévisible et non maîtrisé après une coupure",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "ELEC04",
     "domain": "ELEC",
-    "domain_name": "⚡ Électricité & Alimentation",
+    "domain_name": "⚡ Sécurité électrique & sûreté",
     "title": "Interverrouillages",
-    "question": "Vos volets roulants et moteurs utilisent-ils des modules dédiés avec interverrouillage électrique matériel empêchant la montée et la descente simultanées ?",
-    "explanation": "Protection contre les commandes contradictoires simultanées (ex: interverrouillage matériel montée/descente sur volets ou moteurs).",
-    "critical": true
+    "critical": true,
+    "question": "Vos volets roulants, portails ou moteurs disposent-ils d'une sécurité matérielle empêchant d'activer en même temps les ordres de montée et de descente ?",
+    "why": "Envoyer simultanément l'ordre de monter et de descendre sur un moteur de volet ou de portail peut griller le bobinage en quelques secondes.",
+    "options": [
+      {
+        "label": "Oui, protection matérielle absolue (relais inverseurs mécaniques ou modules dédiés volets empêchant physiquement la double commande)",
+        "score": 4
+      },
+      {
+        "label": "Modules volets dédiés avec interverrouillage logiciel intégré et fiable",
+        "score": 3
+      },
+      {
+        "label": "Interverrouillage géré uniquement par des automatisations dans Home Assistant sans sécurité matérielle",
+        "score": 2
+      },
+      {
+        "label": "Risque théorique de commande simultanée sur certains moteurs",
+        "score": 1
+      },
+      {
+        "label": "Aucune sécurité : possibilité d'alimenter montée et descente en même temps, risquant de griller le moteur",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "ELEC05",
     "domain": "ELEC",
-    "domain_name": "⚡ Électricité & Alimentation",
+    "domain_name": "⚡ Sécurité électrique & sûreté",
     "title": "Gestion des équipements critiques",
-    "question": "Tous vos équipements critiques (serrure connectée, vanne générale, pompe) disposent-ils d'une solution de secours physique (clé manuelle, vanne bypass) ?",
-    "explanation": "Comportement maîtrisé en cas de panne ou de défaillance sur les équipements critiques (eau, chauffage, sécurité, accès).",
-    "critical": false
+    "critical": false,
+    "question": "Vos équipements vitaux (congélateur, pompe de relevage, ventilation, alarme) conservent-ils un fonctionnement sûr si la domotique s'arrête ?",
+    "why": "Un équipement critique ne doit jamais cesser de fonctionner simplement parce qu'un composant logiciel domotique est en maintenance.",
+    "options": [
+      {
+        "label": "Oui, les équipements critiques sont totalement indépendants et possèdent leur propre sécurité autonome",
+        "score": 4
+      },
+      {
+        "label": "Les équipements critiques sont surveillés par la domotique mais restent secourus et autonomes",
+        "score": 3
+      },
+      {
+        "label": "La domotique pilote certains appareils critiques mais avec une reprise manuelle facile",
+        "score": 2
+      },
+      {
+        "label": "Un arrêt de la domotique peut laisser un appareil critique dans un état indésirable (ex: pompe coupée)",
+        "score": 1
+      },
+      {
+        "label": "Les équipements vitaux dépendent entièrement de Home Assistant pour fonctionner",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
-    "id": "ENER01",
-    "domain": "ENER",
-    "domain_name": "☀️ Énergie & Solaire",
-    "title": "Consommation électrique globale",
-    "question": "Avez-vous une mesure en direct de la puissance consommée par toute la maison (module Linky TIC ou pince au tableau) ?",
-    "explanation": "Mesure en temps réel de la consommation électrique globale du logement (téléinformation Linky TIC, tore de mesure au disjoncteur général, pince ampèremétrique).",
-    "critical": false
+    "id": "CYBER01",
+    "domain": "CYBER",
+    "domain_name": "🔒 Cybersécurité",
+    "title": "Accès distant sécurisé",
+    "critical": true,
+    "question": "Comment vous connectez-vous à votre Home Assistant lorsque vous êtes à l'extérieur de chez vous ?",
+    "why": "Ouvrir directement un port non chiffré sur Internet expose votre serveur domotique à des piratages automatisés permanents.",
+    "options": [
+      {
+        "label": "Via Home Assistant Cloud officiel (Nabu Casa), un tunnel sécurisé ou un VPN privé (WireGuard / Tailscale)",
+        "score": 4
+      },
+      {
+        "label": "Via un proxy inverse sécurisé avec certificat HTTPS valide et filtrage d'adresses",
+        "score": 3
+      },
+      {
+        "label": "Via une redirection de port avec certificat HTTPS personnel (Let's Encrypt)",
+        "score": 2
+      },
+      {
+        "label": "Via un nom de domaine sans cadenas sécurisé",
+        "score": 1
+      },
+      {
+        "label": "En ouvrant directement le port HTTP non chiffré sur ma box Internet",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": true,
+    "not_applicable_label": "Non applicable (aucun accès distant)"
   },
   {
-    "id": "ENER02",
-    "domain": "ENER",
-    "domain_name": "☀️ Énergie & Solaire",
-    "title": "Historique énergétique",
-    "question": "Votre tableau de bord Énergie natif dans Home Assistant est-il configuré et alimenté par vos capteurs ?",
-    "explanation": "Conservation et exploitation d'un historique journalier, mensuel et annuel complet dans le tableau de bord Énergie natif de Home Assistant.",
-    "critical": false
+    "id": "CYBER02",
+    "domain": "CYBER",
+    "domain_name": "🔒 Cybersécurité",
+    "title": "Double authentification (2FA)",
+    "critical": false,
+    "question": "Avez-vous activé la double authentification (code temporaire sur smartphone) pour vous connecter à Home Assistant ?",
+    "why": "Même si votre mot de passe venait à être dérobé, la double authentification empêche un intrus de se connecter à votre maison.",
+    "options": [
+      {
+        "label": "Oui, activée et obligatoire sur tous les comptes du foyer avec clés de secours notées",
+        "score": 4
+      },
+      {
+        "label": "Activée sur tous les comptes administrateurs",
+        "score": 3
+      },
+      {
+        "label": "Configurée sur un seul compte utilisateur",
+        "score": 2
+      },
+      {
+        "label": "Configuration commencée mais non finalisée",
+        "score": 1
+      },
+      {
+        "label": "Non, la connexion se fait uniquement par mot de passe",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
-    "id": "ENER03",
-    "domain": "ENER",
-    "domain_name": "☀️ Énergie & Solaire",
-    "title": "Mesure des principaux usages",
-    "question": "Mesurez-vous la consommation de vos principaux appareils individuellement (chauffe-eau, lave-linge, réfrigérateur, multimédia) ?",
-    "explanation": "Sous-comptage individuel des consommateurs significatifs de la maison (chauffe-eau, chauffage, pompe à chaleur, électroménager, recharge VE).",
-    "critical": false
+    "id": "CYBER03",
+    "domain": "CYBER",
+    "domain_name": "🔒 Cybersécurité",
+    "title": "Comptes utilisateurs individualisés",
+    "critical": false,
+    "question": "Chaque personne du foyer utilise-t-elle son propre compte personnel pour se connecter à Home Assistant ?",
+    "why": "Avoir des comptes séparés permet de personnaliser l'expérience de chacun, de gérer les présences et de tracer les actions.",
+    "options": [
+      {
+        "label": "Oui, chaque membre possède son propre compte avec des droits et tableaux de bord adaptés",
+        "score": 4
+      },
+      {
+        "label": "Chaque membre a son compte nominatif mais avec des droits identiques",
+        "score": 3
+      },
+      {
+        "label": "Deux comptes existent (un principal et un partagé pour le reste de la famille)",
+        "score": 2
+      },
+      {
+        "label": "Tout le monde utilise le même compte administrateur partagé",
+        "score": 1
+      },
+      {
+        "label": "Aucun compte configuré en dehors du compte par défaut sans mot de passe",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": true,
+    "not_applicable_label": "Non applicable (je vis seul)"
   },
   {
-    "id": "ENER04",
-    "domain": "ENER",
-    "domain_name": "☀️ Énergie & Solaire",
-    "title": "Production locale",
-    "question": "Si vous avez des panneaux solaires, leur production en direct et leur historique sont-ils intégrés dans Home Assistant ?",
-    "explanation": "Mesure en temps réel et historique de la production locale d'énergie (panneaux solaires photovoltaïques, micro-onduleurs ou éolien).",
-    "critical": false
+    "id": "CYBER04",
+    "domain": "CYBER",
+    "domain_name": "🔒 Cybersécurité",
+    "title": "Principe du moindre privilège",
+    "critical": false,
+    "question": "Les personnes qui ne gèrent pas la technique (enfants, invités, conjoints) ont-elles des droits restreints sans accès aux paramètres système ?",
+    "why": "Restreindre les droits d'administration évite les suppressions ou déréglages accidentels par les enfants ou les invités.",
+    "options": [
+      {
+        "label": "Oui, seuls les gestionnaires sont administrateurs, tous les autres utilisateurs ont des profils stricts et verrouillés",
+        "score": 4
+      },
+      {
+        "label": "La plupart des utilisateurs sont en profil utilisateur simple sans accès aux paramètres",
+        "score": 3
+      },
+      {
+        "label": "Seul un compte invité est restreint, les autres sont administrateurs",
+        "score": 2
+      },
+      {
+        "label": "Tous les membres du foyer ont les pleins droits administrateur",
+        "score": 1
+      },
+      {
+        "label": "Aucun contrôle d'accès : tout utilisateur peut modifier ou supprimer la configuration",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": true,
+    "not_applicable_label": "Non applicable (je vis seul)"
   },
   {
-    "id": "ENER05",
-    "domain": "ENER",
-    "domain_name": "☀️ Énergie & Solaire",
-    "title": "Tarification",
-    "question": "Home Assistant connaît-il votre contrat d'électricité (Heures Creuses, Tempo, tarif dynamique) pour calculer vos coûts ?",
-    "explanation": "Home Assistant connaît les plages horaires, tarifs d'électricité et contrats dynamiques (Heures Pleines / Heures Creuses, Tempo, Spot, RTE).",
-    "critical": false
+    "id": "CYBER05",
+    "domain": "CYBER",
+    "domain_name": "🔒 Cybersécurité",
+    "title": "Gestion des secrets et identifiants sensibles",
+    "critical": true,
+    "question": "Vos mots de passe, tokens et clés secrètes sont-ils isolés dans le fichier secrets.yaml ou un coffre-fort sécurisé ?",
+    "why": "Centraliser les secrets évite d'exposer accidentellement vos mots de passe lors d'un partage de configuration ou d'une sauvegarde.",
+    "options": [
+      {
+        "label": "Oui, 100 % des identifiants et clés sensibles sont isolés dans secrets.yaml sans aucune fuite",
+        "score": 4
+      },
+      {
+        "label": "La quasi-totalité des secrets est bien centralisée dans secrets.yaml",
+        "score": 3
+      },
+      {
+        "label": "La plupart des mots de passe sont protégés mais il reste quelques clés en clair dans des fichiers YAML",
+        "score": 2
+      },
+      {
+        "label": "De nombreux mots de passe sont écrits en clair directement dans les scripts et automatisations",
+        "score": 1
+      },
+      {
+        "label": "Tous les mots de passe et identifiants sont écrits en clair dans les fichiers de configuration",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
-    "id": "ENER06",
-    "domain": "ENER",
-    "domain_name": "☀️ Énergie & Solaire",
-    "title": "Optimisation automatique",
-    "question": "Home Assistant déclenche-t-il automatiquement votre chauffe-eau, recharge ou gros appareils pendant les heures creuses ou le surplus solaire ?",
-    "explanation": "Déplacement automatique des gros consommateurs (chauffe-eau, recharge, électroménager) vers les périodes énergétiquement intéressantes (heures creuses, surplus solaire).",
-    "critical": false
+    "id": "CYBER06",
+    "domain": "CYBER",
+    "domain_name": "🔒 Cybersécurité",
+    "title": "Politique de mises à jour",
+    "critical": false,
+    "question": "À quelle fréquence appliquez-vous les mises à jour de Home Assistant et de ses composants ?",
+    "why": "Les mises à jour mensuelles corrigent les failles de sécurité découvertes et assurent la stabilité de vos équipements.",
+    "options": [
+      {
+        "label": "Régulièrement chaque mois après avoir lu les nouveautés et avec une sauvegarde automatique préalable",
+        "score": 4
+      },
+      {
+        "label": "Mises à jour appliquées au moins une fois par mois",
+        "score": 3
+      },
+      {
+        "label": "Mises à jour occasionnelles tous les 3 à 6 mois",
+        "score": 2
+      },
+      {
+        "label": "Mises à jour très rares (plus de 6 mois de retard)",
+        "score": 1
+      },
+      {
+        "label": "Aucune mise à jour appliquée depuis l'installation initiale",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
-    "id": "ENER07",
-    "domain": "ENER",
-    "domain_name": "☀️ Énergie & Solaire",
-    "title": "Autoconsommation",
-    "question": "Avez-vous mis en place un dispositif actif (routeur solaire, batterie ou automatisme dynamique) pour consommer toute votre électricité solaire ?",
-    "explanation": "Optimisation du taux d'autoconsommation solaire locale (routeur solaire, batterie domestique, délestage dynamique).",
-    "critical": false
+    "id": "CYBER07",
+    "domain": "CYBER",
+    "domain_name": "🔒 Cybersécurité",
+    "title": "Exposition et segmentation du réseau IoT",
+    "critical": false,
+    "question": "Vos objets connectés Wi-Fi (caméras, prises, ampoules) sont-ils séparés de vos ordinateurs personnels sur votre réseau ?",
+    "why": "Si une ampoule ou une prise connectée bon marché est piratée, un réseau isolé empêche l'attaquant d'accéder à vos ordinateurs personnels.",
+    "options": [
+      {
+        "label": "Oui, réseau Wi-Fi/VLAN dédié et isolé avec blocage d'accès vers les ordinateurs personnels",
+        "score": 4
+      },
+      {
+        "label": "Réseau Wi-Fi/VLAN séparé mais sans règles de pare-feu strictes",
+        "score": 3
+      },
+      {
+        "label": "Réseau local unique situé derrière le pare-feu/NAT de la box Internet (aucun port exposé vers l'extérieur, mais pas de séparation interne)",
+        "score": 2
+      },
+      {
+        "label": "Quelques objets isolés sur le Wi-Fi Invité, les autres mélangés aux ordinateurs",
+        "score": 1
+      },
+      {
+        "label": "Tous les objets connectés et ordinateurs mélangés sur le même réseau avec des ports ouverts vers Internet",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
-    "id": "ENER08",
-    "domain": "ENER",
-    "domain_name": "☀️ Énergie & Solaire",
-    "title": "Eau",
-    "question": "Votre consommation d'eau (en litres ou m³) est-elle suivie en direct dans Home Assistant ?",
-    "explanation": "Mesure en temps réel, historique de consommation d'eau et intégration dans Home Assistant.",
-    "critical": false
-  },
-  {
-    "id": "ENER09",
-    "domain": "ENER",
-    "domain_name": "☀️ Énergie & Solaire",
-    "title": "Détection des anomalies énergétiques",
-    "question": "Recevez-vous une alerte si un appareil consomme anormalement longtemps ou si un écoulement d'eau continu est détecté la nuit ?",
-    "explanation": "Détection automatique des surconsommations électriques anormales (talon de veille excessif, appareil resté allumé) et des fuites d'eau continues.",
-    "critical": false
-  },
-  {
-    "id": "INTER01",
-    "domain": "INTER",
-    "domain_name": "🔌 Protocoles Locaux & Sans Fil",
-    "title": "Protocoles locaux",
-    "question": "Vos équipements domotiques fonctionnent-ils en majorité via des protocoles locaux (Zigbee, Matter, ESPHome, MQTT) ?",
-    "explanation": "Utilisation prioritaire de protocoles domotiques locaux sans dépendance cloud (Zigbee, Matter, Z-Wave, ESPHome, MQTT, Modbus, API locales).",
-    "critical": false
-  },
-  {
-    "id": "INTER02",
-    "domain": "INTER",
-    "domain_name": "🔌 Protocoles Locaux & Sans Fil",
-    "title": "Dépendance au Cloud",
-    "question": "Vos fonctions essentielles (lumières, volets, chauffage) peuvent-elles continuer à fonctionner si un constructeur ferme ses serveurs ?",
-    "explanation": "Les fonctions vitales de la maison (éclairage, chauffage, ouvrants, sécurité) ne dépendent d'aucun cloud constructeur pour leur fonctionnement quotidien.",
-    "critical": false
-  },
-  {
-    "id": "INTER03",
-    "domain": "INTER",
-    "domain_name": "🔌 Protocoles Locaux & Sans Fil",
-    "title": "Remplaçabilité du matériel",
-    "question": "Si une ampoule ou un capteur tombe en panne, pouvez-vous le remplacer facilement sans devoir modifier toutes vos automatisations ?",
-    "explanation": "Utilisation d'une couche d'abstraction (groupes d'entités, templates, scripts intermédiaires) permettant de remplacer un équipement physique défaillant sans modifier toutes les automatisations.",
-    "critical": false
-  },
-  {
-    "id": "INTER04",
-    "domain": "INTER",
-    "domain_name": "🔌 Protocoles Locaux & Sans Fil",
-    "title": "Organisation Home Assistant",
-    "question": "Tous vos appareils et entités sont-ils correctement affectés à leur pièce dans Home Assistant ?",
-    "explanation": "Organisation rigoureuse et cohérente de Home Assistant : affectation de chaque appareil et entité à sa pièce (Zone/Area), labels et catégories.",
-    "critical": false
-  },
-  {
-    "id": "INTER05",
-    "domain": "INTER",
-    "domain_name": "🔌 Protocoles Locaux & Sans Fil",
-    "title": "Standardisation",
-    "question": "Vos équipements utilisent-ils des standards ouverts universels (Zigbee 3.0, Matter, MQTT, ESPHome) évitant l'enfermement ?",
-    "explanation": "Les protocoles et équipements utilisés reposent sur des standards ouverts interopérables (Zigbee 3.0, Matter, Thread, ESPHome, MQTT, OpenTherm) évitant l'enfermement propriétaire.",
-    "critical": false
-  },
-  {
-    "id": "INTER06",
-    "domain": "INTER",
-    "domain_name": "🔌 Protocoles Locaux & Sans Fil",
-    "title": "Intégration centralisée",
-    "question": "Home Assistant est-il le chef d'orchestre centralisant l'ensemble des systèmes de votre maison ?",
-    "explanation": "Home Assistant sert de chef d'orchestre unique : l'ensemble des systèmes de la maison sont pilotés et supervisés depuis une plateforme centrale.",
-    "critical": false
-  },
-  {
-    "id": "MAINT01",
-    "domain": "MAINT",
-    "domain_name": "🛠️ Maintenance & Supervision",
-    "title": "Convention de nommage",
-    "question": "Vos entités et appareils suivent-ils une nomenclature claire et ordonnée (ex: light.salon_plafonnier) ?",
-    "explanation": "Les entités, appareils et automatisations suivent une nomenclature claire, structurée et cohérente (ex: domaine.piece_equipement_fonction) sans identifiants bruts obscurs.",
-    "critical": false
-  },
-  {
-    "id": "MAINT02",
-    "domain": "MAINT",
-    "domain_name": "🛠️ Maintenance & Supervision",
-    "title": "Documentation de l'installation",
-    "question": "Avez-vous un document récapitulatif (adresses IP, schémas, matériel) permettant de comprendre votre installation ?",
-    "explanation": "Les éléments techniques importants de l'installation sont documentés dans un mémo ou dossier récapitulatif (adresses IP fixes, schémas, comptes, protocoles).",
-    "critical": false
-  },
-  {
-    "id": "MAINT03",
-    "domain": "MAINT",
-    "domain_name": "🛠️ Maintenance & Supervision",
-    "title": "Automatisations documentées",
-    "question": "Vos automatisations et scripts comportent-ils tous une description expliquant ce qu'ils font ?",
-    "explanation": "Les automatisations et scripts possèdent des descriptions claires précisant leur rôle, déclencheurs et conditions.",
-    "critical": false
-  },
-  {
-    "id": "MAINT04",
-    "domain": "MAINT",
-    "domain_name": "🛠️ Maintenance & Supervision",
-    "title": "Nettoyage des entités inutilisées",
-    "question": "Nettoyez-vous régulièrement les anciennes entités et anciens appareils qui ne sont plus utilisés ?",
-    "explanation": "Les entités orphelines, appareils retirés ou intégrations fantômes sont régulièrement identifiés et nettoyés.",
-    "critical": false
-  },
-  {
-    "id": "MAINT05",
-    "domain": "MAINT",
-    "domain_name": "🛠️ Maintenance & Supervision",
-    "title": "Tableau de santé technique",
-    "question": "Avez-vous une vue ou une alerte centralisant le niveau de toutes les piles et batteries de vos capteurs ?",
-    "explanation": "Un tableau de bord technique dédié permet de surveiller rapidement l'état du système : niveau des batteries, charge CPU, mémoire, espace disque et appareils hors ligne.",
-    "critical": false
-  },
-  {
-    "id": "MAINT06",
-    "domain": "MAINT",
-    "domain_name": "🛠️ Maintenance & Supervision",
-    "title": "Procédure de reprise d'urgence",
-    "question": "Avez-vous une procédure écrite expliquant comment réinstaller Home Assistant et restaurer votre sauvegarde en cas de crash ?",
-    "explanation": "Les informations indispensables pour redémarrer ou réinstaller le système en cas de panne matérielle majeure sont rédigées et accessibles.",
-    "critical": false
-  },
-  {
-    "id": "MAINT07",
-    "domain": "MAINT",
-    "domain_name": "🛠️ Maintenance & Supervision",
-    "title": "Historique des modifications",
-    "question": "Tenez-vous un historique ou un journal de vos modifications pour retrouver facilement ce qui a changé en cas de bug ?",
-    "explanation": "Les évolutions significatives de l'installation sont traçables (gestionnaire de versions Git, journal de bord ou notes de révisions datées).",
-    "critical": false
+    "id": "CYBER08",
+    "domain": "CYBER",
+    "domain_name": "🔒 Cybersécurité",
+    "title": "Surveillance et alertes de sécurité",
+    "critical": false,
+    "question": "Recevez-vous une alerte si quelqu'un tente de se connecter avec un mauvais mot de passe ou si un appareil suspect apparaît sur votre réseau ?",
+    "why": "Être alerté d'une tentative de connexion anormale permet de bloquer rapidement un intrus avant qu'il n'accède au système.",
+    "options": [
+      {
+        "label": "Oui, détection automatique des tentatives d'intrusion et alertes immédiates sur smartphone",
+        "score": 4
+      },
+      {
+        "label": "Notifications configurées pour les échecs de connexion à Home Assistant",
+        "score": 3
+      },
+      {
+        "label": "Journal des connexions vérifié manuellement de temps en temps",
+        "score": 2
+      },
+      {
+        "label": "Alertes de sécurité connues mais non configurées",
+        "score": 1
+      },
+      {
+        "label": "Aucune surveillance des connexions ni des accès réseau",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "RES01",
     "domain": "RES",
-    "domain_name": "🛡️ Résilience & Secours",
+    "domain_name": "🛡️ Résilience & continuité",
     "title": "Fonctionnement sans Internet",
-    "question": "Avez-vous testé le fonctionnement de votre maison en débranchant le câble Internet de votre box ?",
-    "explanation": "Les fonctions locales essentielles (lumières, volets, chauffage, automatisations internes) continuent de fonctionner parfaitement lors d'une coupure de la connexion Internet.",
-    "critical": false
+    "critical": false,
+    "question": "Si votre connexion Internet est coupée, vos automatisations locales, éclairages et boutons continuent-ils de fonctionner normalement dans la maison ?",
+    "why": "Une maison autonome doit pouvoir s'éclairer, se chauffer et réagir aux boutons même en cas de coupure de fibre ou de panne opérateur.",
+    "options": [
+      {
+        "label": "Oui, 100 % des commandes physiques, scénarios et régulations locales continuent de fonctionner sans Internet",
+        "score": 4
+      },
+      {
+        "label": "La très grande majorité fonctionne, seuls quelques services d'information météo ou vocaux sont indisponibles",
+        "score": 3
+      },
+      {
+        "label": "Les fonctions de base fonctionnent mais plusieurs appareils dépendants du cloud sont bloqués",
+        "score": 2
+      },
+      {
+        "label": "Seules quelques commandes très basiques fonctionnent encore",
+        "score": 1
+      },
+      {
+        "label": "Non, la maison est paralysée sans connexion Internet",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "RES02",
     "domain": "RES",
-    "domain_name": "🛡️ Résilience & Secours",
+    "domain_name": "🛡️ Résilience & continuité",
     "title": "Fonctionnement sans Home Assistant",
-    "question": "Vos télécommandes et boutons physiques continuent-ils de fonctionner si la machine Home Assistant est éteinte ?",
-    "explanation": "Les fonctions essentielles disposent d'un mode manuel physique ou de liaisons directes autonomes (Zigbee direct binding, télécommandes associées) en cas d'arrêt du serveur.",
-    "critical": true
+    "critical": true,
+    "question": "Si votre serveur Home Assistant est totalement éteint ou en panne, pouvez-vous continuer à vivre normalement dans la maison (lumières, volets, chauffage) ?",
+    "why": "La domotique doit apporter du confort en plus, sans jamais rendre le logement inhabitable lors d'une panne informatique.",
+    "options": [
+      {
+        "label": "Oui, toutes les fonctions vitales restent pilotables manuellement et directement sans aucune gêne",
+        "score": 4
+      },
+      {
+        "label": "La quasi-totalité des pièces reste utilisable avec quelques scénarios avancés en moins",
+        "score": 3
+      },
+      {
+        "label": "On peut s'éclairer mais certains volets ou chauffages deviennent difficiles à commander",
+        "score": 2
+      },
+      {
+        "label": "Nombreux équipements bloqués et vie quotidienne fortement perturbée",
+        "score": 1
+      },
+      {
+        "label": "Non, les équipements sont inutilisables et la maison est bloquée sans le serveur",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "RES03",
     "domain": "RES",
-    "domain_name": "🛡️ Résilience & Secours",
-    "title": "Supervision périphériques indisponibles",
-    "question": "Recevez-vous une notification si un capteur important (thermomètre, détecteur de fuite, passerelle) devient indisponible ?",
-    "explanation": "Home Assistant identifie, supervise et alerte sur les périphériques importants ou capteurs critiques devenus indisponibles ou hors ligne.",
-    "critical": false
+    "domain_name": "🛡️ Résilience & continuité",
+    "title": "Supervision des appareils indisponibles",
+    "critical": false,
+    "question": "Home Assistant vous prévient-il rapidement si un capteur important ou un appareil ne répond plus ?",
+    "why": "Savoir immédiatement qu'un capteur de fuite ou de température ne répond plus évite de fausses sécurités.",
+    "options": [
+      {
+        "label": "Oui, surveillance automatique continue avec notification ciblée dès qu'un équipement devient indisponible",
+        "score": 4
+      },
+      {
+        "label": "Tableau de bord dédié regroupant clairement tous les appareils hors ligne",
+        "score": 3
+      },
+      {
+        "label": "Les appareils indisponibles sont visibles uniquement en parcourant les listes techniques",
+        "score": 2
+      },
+      {
+        "label": "Détection manuelle uniquement lorsqu'on constate qu'une commande ne répond plus",
+        "score": 1
+      },
+      {
+        "label": "Aucun suivi des appareils indisponibles",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "RES04",
     "domain": "RES",
-    "domain_name": "🛡️ Résilience & Secours",
-    "title": "Qualité du réseau domotique",
-    "question": "Votre réseau Zigbee/domotique est-il stable et bien maillé grâce à des prises ou modules branchés sur secteur faisant office de routeurs ?",
-    "explanation": "La santé et la qualité du maillage des réseaux domotiques (Zigbee, Wi-Fi, Matter, Z-Wave) sont surveillées avec un nombre suffisant de routeurs.",
-    "critical": false
+    "domain_name": "🛡️ Résilience & continuité",
+    "title": "Qualité et stabilité des réseaux domotiques",
+    "critical": false,
+    "question": "Vos réseaux sans fil domotiques (Zigbee, Z-Wave, Thread, Wi-Fi) sont-ils stables et sans déconnexions intempestives ?",
+    "why": "Un réseau sans fil bien maillé garantit que chaque ordre arrive instantanément sans jamais perdre de commande.",
+    "options": [
+      {
+        "label": "Réseaux parfaitement stables, maillage dense avec relais secteur et zéro déconnexion",
+        "score": 4
+      },
+      {
+        "label": "Très bonne stabilité générale avec de rares déconnexions isolées",
+        "score": 3
+      },
+      {
+        "label": "Réseau fonctionnel mais quelques capteurs éloignés se déconnectent occasionnellement",
+        "score": 2
+      },
+      {
+        "label": "Déconnexions régulières nécessitant de redémarrer des modules",
+        "score": 1
+      },
+      {
+        "label": "Réseaux instables avec pertes d'appareils fréquentes et répétées",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "RES05",
     "domain": "RES",
-    "domain_name": "🛡️ Résilience & Secours",
+    "domain_name": "🛡️ Résilience & continuité",
     "title": "Sauvegardes Home Assistant",
-    "question": "Avez-vous configuré des sauvegardes automatiques régulières (quotidiennes ou hebdomadaires) de votre Home Assistant ?",
-    "explanation": "Des sauvegardes complètes automatiques et régulières de Home Assistant sont programmées et actives.",
-    "critical": true
+    "critical": true,
+    "question": "À quelle fréquence vos sauvegardes Home Assistant sont-elles créées automatiquement ?",
+    "why": "En cas de panne matérielle ou de fausse manipulation, une sauvegarde récente permet de restaurer l'intégralité de sa maison en quelques clics.",
+    "options": [
+      {
+        "label": "Sauvegarde automatique quotidienne complète avec rotation et historique sur plusieurs semaines",
+        "score": 4
+      },
+      {
+        "label": "Sauvegarde automatique au moins une fois par semaine",
+        "score": 3
+      },
+      {
+        "label": "Sauvegardes manuelles régulières faites de temps en temps",
+        "score": 2
+      },
+      {
+        "label": "Une seule sauvegarde ancienne non renouvelée",
+        "score": 1
+      },
+      {
+        "label": "Aucune sauvegarde existante",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "RES06",
     "domain": "RES",
-    "domain_name": "🛡️ Résilience & Secours",
-    "title": "Sauvegarde hors de Home Assistant",
-    "question": "Vos sauvegardes sont-elles automatiquement copiées en dehors de votre serveur (vers un NAS, Google Drive, Nextcloud ou clé USB externe) ?",
-    "explanation": "Au moins une copie des sauvegardes est automatiquement exportée et conservée hors de la machine Home Assistant (clé USB externe, NAS local, Google Drive, OneDrive, Cloud chiffré).",
-    "critical": false
+    "domain_name": "🛡️ Résilience & continuité",
+    "title": "Sauvegarde hors de la machine Home Assistant",
+    "critical": false,
+    "question": "Vos sauvegardes sont-elles automatiquement envoyées hors de la machine (sur un cloud sécurisé, un NAS ou un autre ordinateur) ?",
+    "why": "Si le disque du serveur grille, les sauvegardes restées sur la machine sont perdues en même temps que le système.",
+    "options": [
+      {
+        "label": "Oui, copies automatiques externalisées sur un stockage distant sécurisé (cloud chiffré, NAS distant)",
+        "score": 4
+      },
+      {
+        "label": "Copie automatique sur un NAS local ou support réseau distinct de la machine",
+        "score": 3
+      },
+      {
+        "label": "Copie manuelle périodique sur un ordinateur ou une clé USB externe",
+        "score": 2
+      },
+      {
+        "label": "Les sauvegardes restent stockées uniquement sur le disque de Home Assistant",
+        "score": 1
+      },
+      {
+        "label": "Aucune copie de sauvegarde disponible",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "RES07",
     "domain": "RES",
-    "domain_name": "🛡️ Résilience & Secours",
-    "title": "Restauration testée",
-    "question": "Avez-vous déjà testé la restauration complète d'une sauvegarde pour valider que votre maison repart sans encombre ?",
-    "explanation": "La procédure de restauration d'une sauvegarde a déjà été testée et validée en situation réelle ou sur une instance de secours.",
-    "critical": false
+    "domain_name": "🛡️ Résilience & continuité",
+    "title": "Restauration réellement testée",
+    "critical": false,
+    "question": "Avez-vous déjà testé au moins une fois la restauration complète d'une sauvegarde pour vérifier qu'elle fonctionne vraiment ?",
+    "why": "Une sauvegarde non testée peut s'avérer corrompue ou incomplète le jour où l'on en a impérativement besoin.",
+    "options": [
+      {
+        "label": "Oui, restauration complète testée avec succès récemment sur une machine ou un environnement de test",
+        "score": 4
+      },
+      {
+        "label": "Restauration complète déjà effectuée avec succès lors d'un changement de matériel ou d'une panne passée",
+        "score": 3
+      },
+      {
+        "label": "Restauration partielle d'un fichier ou d'une intégration testée seulement",
+        "score": 2
+      },
+      {
+        "label": "Jamais testée mais j'ai une procédure écrite étape par étape",
+        "score": 1
+      },
+      {
+        "label": "Non, je n'ai jamais testé la restauration d'une sauvegarde",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "RES08",
     "domain": "RES",
-    "domain_name": "🛡️ Résilience & Secours",
-    "title": "Continuité électrique",
-    "question": "Votre serveur Home Assistant et votre box Internet sont-ils branchés sur un onduleur (UPS) avec batterie ?",
-    "explanation": "Stratégie face aux microcoupures et coupures de courant (onduleur / UPS sur serveur et équipements réseau, arrêt propre automatisé).",
-    "critical": false
+    "domain_name": "🛡️ Résilience & continuité",
+    "title": "Continuité électrique / reprise après coupure",
+    "critical": false,
+    "question": "Comment votre installation domotique redémarre-t-elle après une coupure de courant ?",
+    "why": "Après un orage ou une coupure réseau, la maison doit reprendre sa vie normale automatiquement sans exiger de manipulation complexe.",
+    "options": [
+      {
+        "label": "Redémarrage automatique ordonné, reconnexion fluide de tous les réseaux et reprise instantanée des scénarios",
+        "score": 4
+      },
+      {
+        "label": "Redémarrage automatique complet sans intervention manuelle",
+        "score": 3
+      },
+      {
+        "label": "Redémarrage fonctionnel mais certains modules nécessitent une action manuelle pour se reconnecter",
+        "score": 2
+      },
+      {
+        "label": "Redémarrage difficile avec des états d'appareils incohérents",
+        "score": 1
+      },
+      {
+        "label": "Le système nécessite une intervention manuelle lourde pour repartir après une coupure",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "AUTO01",
+    "domain": "AUTO",
+    "domain_name": "⚙️ Automatisations & intelligence",
+    "title": "Éclairage intelligent",
+    "critical": false,
+    "question": "Chez vous, certains éclairages s'allument-ils et s'éteignent-ils automatiquement selon la présence, l'heure ou la luminosité ?",
+    "why": "Automatiser l'éclairage apporte un confort immédiat au quotidien et évite que des lumières restent allumées inutilement.",
+    "options": [
+      {
+        "label": "Oui, éclairage intelligent complet avec allumage progressif, scènes adaptées à l'activité et extinction au départ",
+        "score": 4
+      },
+      {
+        "label": "Oui, éclairages contextualisés selon la luminosité et variation douce nuit/jour",
+        "score": 3
+      },
+      {
+        "label": "Détecteurs de mouvement basiques dans les pièces de passage allumant à 100 % quelle que soit l'heure",
+        "score": 2
+      },
+      {
+        "label": "Minuteries ou programmations horaires fixes rigides sans capteur",
+        "score": 1
+      },
+      {
+        "label": "Non, allumage et extinction 100 % manuels",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "AUTO02",
+    "domain": "AUTO",
+    "domain_name": "⚙️ Automatisations & intelligence",
+    "title": "Chauffage intelligent",
+    "critical": false,
+    "question": "Votre chauffage ou climatisation s'ajuste-t-il automatiquement selon vos présences, horaires et ouvertures de fenêtres ?",
+    "why": "Réduire le chauffage lors des absences et aérations génère d'importantes économies d'énergie sans sacrifier le confort.",
+    "options": [
+      {
+        "label": "Oui, régulation thermique prédictive avec anticipation météo, présence et délestage",
+        "score": 4
+      },
+      {
+        "label": "Régulation avancée avec coupure sur fenêtre ouverte et abaissement automatique en absence",
+        "score": 3
+      },
+      {
+        "label": "Thermostats connectés pilotables à distance mais sans détection d'ouverture ni d'absence",
+        "score": 2
+      },
+      {
+        "label": "Thermostat programmable avec simple calendrier hebdomadaire fixe",
+        "score": 1
+      },
+      {
+        "label": "Chauffage non connecté ou consigne fixe continue sans programmation",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "AUTO03",
+    "domain": "AUTO",
+    "domain_name": "⚙️ Automatisations & intelligence",
+    "title": "Ventilation intelligente",
+    "critical": false,
+    "question": "Votre ventilation (VMC) s'adapte-t-elle automatiquement selon l'humidité de la salle de bain ou la qualité de l'air ?",
+    "why": "Booster la ventilation lors d'une douche évite les moisissures, et la ralentir le reste du temps limite les pertes de chaleur.",
+    "options": [
+      {
+        "label": "La ventilation adapte automatiquement son fonctionnement selon l'humidité ou la qualité de l'air (ex: pic d'humidité douche), avec retour automatique à un fonctionnement normal",
+        "score": 4
+      },
+      {
+        "label": "Déclenchement automatique lié à un événement précis (ex: allumage lumière salle de bain ou seuil d'humidité fixe) sans régulation fine",
+        "score": 3
+      },
+      {
+        "label": "VMC enclenchée manuellement via bouton ou horaire fixe programmé",
+        "score": 2
+      },
+      {
+        "label": "Mesure d'humidité ou de qualité d'air existante mais sans aucun automatisme associé",
+        "score": 1
+      },
+      {
+        "label": "VMC classique permanente à vitesse fixe sans aucun pilotage domotique",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": true,
+    "not_applicable_label": "Non applicable (pas de VMC)"
+  },
+  {
+    "id": "AUTO04",
+    "domain": "AUTO",
+    "domain_name": "⚙️ Automatisations & intelligence",
+    "title": "Gestion intelligente des volets",
+    "critical": false,
+    "question": "Vos volets roulants ou stores s'ouvrent-ils et se ferment-ils automatiquement selon le soleil et la météo ?",
+    "why": "La gestion bioclimatique des volets conserve la chaleur en hiver et protège le logement des fortes chaleurs estivales.",
+    "options": [
+      {
+        "label": "Gestion dynamique ou bioclimatique tenant compte du soleil, de la température, de la saison ou des conditions thermiques",
+        "score": 4
+      },
+      {
+        "label": "Ouverture et fermeture automatiques selon le lever et le coucher du soleil (éphéméride)",
+        "score": 3
+      },
+      {
+        "label": "Ouverture et fermeture à heures fixes programmées (ex: 8h / 20h) sans tenir compte de la luminosité",
+        "score": 2
+      },
+      {
+        "label": "Quelques volets automatisés ponctuellement, la majorité manipulée manuellement",
+        "score": 1
+      },
+      {
+        "label": "Volets manipulés exclusivement à la main sans aucune programmation",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": true,
+    "not_applicable_label": "Non applicable (pas de volets motorisés)"
+  },
+  {
+    "id": "AUTO05",
+    "domain": "AUTO",
+    "domain_name": "⚙️ Automatisations & intelligence",
+    "title": "Gestion intelligente de l’eau",
+    "critical": false,
+    "question": "Votre maison dispose-t-elle de capteurs de fuite d'eau et d'un système de coupure automatique ?",
+    "why": "Une coupure automatique dès la détection d'une fuite protège le logement contre les dégâts des eaux majeurs.",
+    "options": [
+      {
+        "label": "Protection intégrale : capteurs sous tous les points d'eau sensibles, coupure vanne immédiate et alerte sonore",
+        "score": 4
+      },
+      {
+        "label": "Alerte immédiate sur smartphone + coupure automatique de la vanne générale",
+        "score": 3
+      },
+      {
+        "label": "Notification reçue en cas de fuite mais sans coupure automatique de l'eau",
+        "score": 2
+      },
+      {
+        "label": "Capteurs de fuite en place mais sans notification sonore ou push configurée",
+        "score": 1
+      },
+      {
+        "label": "Aucun capteur d'inondation ni mesure de consommation d'eau",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "AUTO06",
+    "domain": "AUTO",
+    "domain_name": "⚙️ Automatisations & intelligence",
+    "title": "Suivi et automatisation des appareils domestiques",
+    "critical": false,
+    "question": "Suivez-vous le fonctionnement de vos appareils électroménagers (machine à laver, lave-vaisselle, sèche-linge) ?",
+    "why": "Être notifié dès qu'une machine est terminée évite d'oublier le linge humide dans le tambour.",
+    "options": [
+      {
+        "label": "Intégration complète avec détection de cycle, rappel de déchargement du linge et optimisation tarifaire",
+        "score": 4
+      },
+      {
+        "label": "Notification de fin de cycle (push ou vocale) envoyée dès que la machine est terminée",
+        "score": 3
+      },
+      {
+        "label": "Notification basique de fin de cycle sur seuil de puissance fixe",
+        "score": 2
+      },
+      {
+        "label": "Prise connectée avec mesure en place mais sans notification traitée",
+        "score": 1
+      },
+      {
+        "label": "Aucun suivi des appareils électroménagers",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "AUTO07",
+    "domain": "AUTO",
+    "domain_name": "⚙️ Automatisations & intelligence",
+    "title": "Présence et occupation",
+    "critical": false,
+    "question": "Home Assistant sait-il automatiquement qui est à la maison, absent, endormi ou en vacances ?",
+    "why": "Les modes d'occupation permettent d'éteindre tous les appareils en partant, d'activer l'alarme et de passer le chauffage en mode éco d'un seul coup.",
+    "options": [
+      {
+        "label": "Détection d'occupation multi-niveaux (radar mmWave, états Maison/Nuit/Absence/Invités)",
+        "score": 4
+      },
+      {
+        "label": "Gestion robuste combinant zones GPS, Wi-Fi des smartphones et détecteurs de mouvement",
+        "score": 3
+      },
+      {
+        "label": "Détection combinant GPS et connexion Wi-Fi du téléphone sur le réseau local",
+        "score": 2
+      },
+      {
+        "label": "Présence basée sur un seul GPS smartphone avec retards fréquents",
+        "score": 1
+      },
+      {
+        "label": "Aucune notion de présence dans Home Assistant",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "AUTO08",
+    "domain": "AUTO",
+    "domain_name": "⚙️ Automatisations & intelligence",
+    "title": "Contextualisation des automatismes",
+    "critical": false,
+    "question": "Vos scénarios domotiques combinent-ils plusieurs conditions intelligentes (luminosité, saison, présence, météo) ?",
+    "why": "Prendre en compte le contexte réel évite les actions inopportunes (comme allumer une lumière en plein soleil ou en pleine nuit).",
+    "options": [
+      {
+        "label": "Architecture complète avec modes de vie globaux pilotant harmonieusement tous les équipements",
+        "score": 4
+      },
+      {
+        "label": "Contextualisation riche combinant luminosité, saison, présence et météo",
+        "score": 3
+      },
+      {
+        "label": "Conditions de présence et de saison intégrées dans les automatisations principales",
+        "score": 2
+      },
+      {
+        "label": "Quelques conditions basiques (heure + jour de la semaine)",
+        "score": 1
+      },
+      {
+        "label": "Déclencheurs horaires simples sans condition contextuelle",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "AUTO09",
+    "domain": "AUTO",
+    "domain_name": "⚙️ Automatisations & intelligence",
+    "title": "Boucle de vérification après commande",
+    "critical": false,
+    "question": "Vos automatisations importantes vérifient-elles que l'appareil a bien réagi après lui avoir envoyé un ordre ?",
+    "why": "Vérifier l'état effectif garantit qu'un ordre de sécurité (comme fermer une vanne ou verrouiller un accès) s'est réellement exécuté.",
+    "options": [
+      {
+        "label": "Boucle de contrôle systématique : ordre envoyé → confirmation d'état → relance automatique en cas d'échec → alerte",
+        "score": 4
+      },
+      {
+        "label": "Contrôle automatique sur les actions critiques (ex: fermeture vanne d'eau ou volets)",
+        "score": 3
+      },
+      {
+        "label": "Vérification manuelle via notifications ou capteurs d'état",
+        "score": 2
+      },
+      {
+        "label": "Simple retour visuel dans l'interface sans vérification automatique",
+        "score": 1
+      },
+      {
+        "label": "Envoi aveugle des commandes sans aucune vérification",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "ENER01",
+    "domain": "ENER",
+    "domain_name": "☀️ Énergie & ressources",
+    "title": "Mesure électrique globale",
+    "critical": false,
+    "question": "Mesurez-vous en temps réel la consommation électrique globale de votre logement (Linky TIC, pince ampèremétrique ou tore au tableau) ?",
+    "why": "La mesure globale en direct permet de détecter les anomalies de consommation, d'anticiper les disjonctions et d'alimenter le tableau Énergie.",
+    "options": [
+      {
+        "label": "Mesure de la puissance instantanée et index de consommation totale en temps réel (Linky TIC, pince ampèremétrique) avec historique",
+        "score": 4
+      },
+      {
+        "label": "Suivi régulier de la puissance globale en direct",
+        "score": 3
+      },
+      {
+        "label": "Relevé périodique journalier ou mensuel uniquement",
+        "score": 2
+      },
+      {
+        "label": "Index relevé manuellement de temps en temps",
+        "score": 1
+      },
+      {
+        "label": "Aucun suivi de la consommation électrique globale",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "ENER02",
+    "domain": "ENER",
+    "domain_name": "☀️ Énergie & ressources",
+    "title": "Historique énergétique",
+    "critical": false,
+    "question": "Conservez-vous un historique de vos consommations pour comparer vos dépenses d'un mois ou d'une année sur l'autre ?",
+    "why": "Comparer vos consommations d'une année sur l'autre permet d'évaluer l'efficacité de vos travaux d'isolation ou de vos nouveaux réglages.",
+    "options": [
+      {
+        "label": "Oui, historique long terme complet avec comparatifs saisonniers et analyses d'évolution",
+        "score": 4
+      },
+      {
+        "label": "Historique d'énergie conservé sur plus d'un an avec graphiques de suivi",
+        "score": 3
+      },
+      {
+        "label": "Historique récent disponible sur quelques semaines ou mois",
+        "score": 2
+      },
+      {
+        "label": "Données conservées sur quelques jours seulement",
+        "score": 1
+      },
+      {
+        "label": "Aucun historique de consommation conservé",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "ENER03",
+    "domain": "ENER",
+    "domain_name": "☀️ Énergie & ressources",
+    "title": "Mesure des principaux postes de consommation",
+    "critical": false,
+    "question": "Mesurez-vous la part respective de chaque gros poste dans votre consommation globale (chauffage, eau chaude, cuisine, prises) ?",
+    "why": "Savoir exactement ce que consomme chaque équipement évite les fausses suppositions et cible les vraies sources d'économies.",
+    "options": [
+      {
+        "label": "Oui, répartition détaillée couvrant la quasi-totalité des postes de consommation du logement",
+        "score": 4
+      },
+      {
+        "label": "Suivi individualisé des 3 ou 4 plus gros consommateurs d'énergie",
+        "score": 3
+      },
+      {
+        "label": "Mesure sur 1 ou 2 appareils seulement",
+        "score": 2
+      },
+      {
+        "label": "Estimations théoriques sans mesure physique réelle",
+        "score": 1
+      },
+      {
+        "label": "Aucune décomposition des postes de consommation",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "ENER04",
+    "domain": "ENER",
+    "domain_name": "☀️ Énergie & ressources",
+    "title": "Production solaire / production locale",
+    "critical": false,
+    "question": "Si vous disposez de panneaux solaires, votre production d'électricité est-elle mesurée en temps réel dans Home Assistant ?",
+    "why": "Connaître votre production instantanée est indispensable pour programmer l'allumage des appareils pendant les heures d'ensoleillement.",
+    "options": [
+      {
+        "label": "Oui, production solaire mesurée en direct avec historique détaillé et prévisions de production",
+        "score": 4
+      },
+      {
+        "label": "Production solaire suivie en temps réel dans Home Assistant",
+        "score": 3
+      },
+      {
+        "label": "Relevé global journalier sans données en temps réel",
+        "score": 2
+      },
+      {
+        "label": "Production consultable uniquement sur l'application du fabricant de l'onduleur",
+        "score": 1
+      },
+      {
+        "label": "Panneaux solaires non raccordés à Home Assistant",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": true,
+    "not_applicable_label": "Non applicable (pas de panneaux solaires)"
+  },
+  {
+    "id": "ENER05",
+    "domain": "ENER",
+    "domain_name": "☀️ Énergie & ressources",
+    "title": "Prise en compte des tarifs électriques",
+    "critical": false,
+    "question": "Vos tarifs d'électricité (Heures Creuses, Tempo, tarifs dynamiques) sont-ils intégrés dans Home Assistant ?",
+    "why": "Connaître le prix exact de l'électricité à chaque instant permet d'automatiser les lancements d'appareils aux moments les plus avantageux.",
+    "options": [
+      {
+        "label": "Oui, tarifs exacts intégrés en temps réel avec calcul automatique du coût de chaque appareil",
+        "score": 4
+      },
+      {
+        "label": "Grille tarifaire Heures Pleines / Heures Creuses configurée dans le tableau Énergie",
+        "score": 3
+      },
+      {
+        "label": "Tarif moyen fixe configuré pour estimer le coût global",
+        "score": 2
+      },
+      {
+        "label": "Tarifs connus mais non renseignés dans Home Assistant",
+        "score": 1
+      },
+      {
+        "label": "Aucune intégration des tarifs électriques",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "ENER06",
+    "domain": "ENER",
+    "domain_name": "☀️ Énergie & ressources",
+    "title": "Optimisation énergétique automatique",
+    "critical": false,
+    "question": "Home Assistant déclenche-t-il automatiquement certains appareils aux heures où l'électricité est la moins chère ?",
+    "why": "Automatiser les lancements sur les heures creuses ou jours avantageux fait baisser directement votre facture annuelle d'électricité.",
+    "options": [
+      {
+        "label": "Pilotage dynamique multi-critères (surplus solaire en temps réel, tarifs dynamiques Tempo/Spot, consigne de température)",
+        "score": 4
+      },
+      {
+        "label": "Pilotage automatisé par Home Assistant selon les plages horaires tarifaires (Heures Creuses)",
+        "score": 3
+      },
+      {
+        "label": "Contacteur jour/nuit classique (ou horloge mécanique) sans pilotage domotique",
+        "score": 2
+      },
+      {
+        "label": "Chauffe-eau en marche continue 24h/24 ou programmation manuelle occasionnelle",
+        "score": 1
+      },
+      {
+        "label": "Aucun pilotage, consommation continue non régulée",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "ENER07",
+    "domain": "ENER",
+    "domain_name": "☀️ Énergie & ressources",
+    "title": "Optimisation de l’autoconsommation",
+    "critical": false,
+    "question": "Votre surplus d'électricité solaire est-il automatiquement utilisé sur place plutôt que d'être réinjecté gratuitement sur le réseau ?",
+    "why": "Autoconsommer son surplus maximise la rentabilité de votre installation solaire photovoltaïque.",
+    "options": [
+      {
+        "label": "Oui, gestionnaire d'énergie dynamique modulant la recharge, l'eau chaude et les appareils selon le surplus",
+        "score": 4
+      },
+      {
+        "label": "Appareils et chauffe-eau enclenchés automatiquement lors des périodes de surplus solaire",
+        "score": 3
+      },
+      {
+        "label": "Nous allumons manuellement certains appareils quand il y a du soleil",
+        "score": 2
+      },
+      {
+        "label": "Surplus solaire réinjecté sur le réseau sans utilisation locale",
+        "score": 1
+      },
+      {
+        "label": "Aucune optimisation d'autoconsommation",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": true,
+    "not_applicable_label": "Non applicable (pas de panneaux solaires)"
+  },
+  {
+    "id": "ENER08",
+    "domain": "ENER",
+    "domain_name": "☀️ Énergie & ressources",
+    "title": "Suivi de la consommation d’eau",
+    "critical": false,
+    "question": "Suivez-vous votre consommation d'eau quotidienne ou en temps réel dans Home Assistant ?",
+    "why": "Suivre l'eau permet de détecter immédiatement un robinet qui goutte ou une chasse d'eau qui fuit continuellement.",
+    "options": [
+      {
+        "label": "Oui, suivi en direct au litre près avec alertes de surconsommation et intégration au tableau Énergie",
+        "score": 4
+      },
+      {
+        "label": "Suivi régulier journalier de la consommation d'eau",
+        "score": 3
+      },
+      {
+        "label": "Relevé périodique mensuel ou manuel du compteur",
+        "score": 2
+      },
+      {
+        "label": "Relevé occasionnel sur la facture d'eau uniquement",
+        "score": 1
+      },
+      {
+        "label": "Aucun suivi de la consommation d'eau",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "ENER09",
+    "domain": "ENER",
+    "domain_name": "☀️ Énergie & ressources",
+    "title": "Détection des anomalies de consommation",
+    "critical": false,
+    "question": "Home Assistant vous prévient-il en cas de consommation anormale (appareil oublié, fuite d'eau, talon électrique anormal) ?",
+    "why": "Être alerté dès la première heure d'une dérive permet d'intervenir avant que la facture ou les dégâts ne s'envolent.",
+    "options": [
+      {
+        "label": "Oui, alertes automatiques en direct sur détection de fuite, surconsommation inhabituelle ou talon nocturne élevé",
+        "score": 4
+      },
+      {
+        "label": "Alertes configurées sur certains seuils de consommation spécifiques",
+        "score": 3
+      },
+      {
+        "label": "Détection visuelle manuelle lors de la consultation des graphiques",
+        "score": 2
+      },
+      {
+        "label": "Anomalies constatées uniquement à la réception de la facture",
+        "score": 1
+      },
+      {
+        "label": "Aucune détection d'anomalie de consommation",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "INTER01",
+    "domain": "INTER",
+    "domain_name": "🔌 Interopérabilité & fonctionnement local",
+    "title": "Utilisation de protocoles locaux",
+    "critical": false,
+    "question": "Vos équipements domotiques communiquent-ils via des protocoles locaux et ouverts (Zigbee, Z-Wave, Matter, Thread, Ethernet) ?",
+    "why": "Les protocoles locaux ouverts garantissent que votre maison reste fonctionnelle et réparable pendant des décennies.",
+    "options": [
+      {
+        "label": "Oui, la quasi-totalité du parc repose sur des protocoles locaux et ouverts sans cloud",
+        "score": 4
+      },
+      {
+        "label": "La majorité de mes appareils communique via des protocoles locaux",
+        "score": 3
+      },
+      {
+        "label": "Équilibre entre protocoles locaux et quelques équipements Wi-Fi fermés",
+        "score": 2
+      },
+      {
+        "label": "Majorité d'équipements en protocoles propriétaires ou fermés",
+        "score": 1
+      },
+      {
+        "label": "Parc entièrement constitué d'appareils fermés dépendants du cloud",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "INTER02",
+    "domain": "INTER",
+    "domain_name": "🔌 Interopérabilité & fonctionnement local",
+    "title": "Dépendance au Cloud",
+    "critical": false,
+    "question": "Dans quelle mesure votre installation domotique peut-elle fonctionner si tous les serveurs cloud extérieurs deviennent indisponibles ?",
+    "why": "L'autonomie locale garantit que votre maison reste pilotable même si un fabricant tiers fait faillite ou coupe ses serveurs.",
+    "options": [
+      {
+        "label": "Indépendance totale : 100 % des fonctions vitales fonctionnent en circuit fermé local",
+        "score": 4
+      },
+      {
+        "label": "Plus de 90 % des fonctions sont locales, seuls quelques services d'information utilisent le cloud",
+        "score": 3
+      },
+      {
+        "label": "Fonctions principales locales mais plusieurs équipements clés dépendent du cloud",
+        "score": 2
+      },
+      {
+        "label": "Dépendance forte : de nombreux appareils s'arrêtent sans accès aux serveurs des fabricants",
+        "score": 1
+      },
+      {
+        "label": "Dépendance totale : la maison s'arrête si les serveurs distants sont coupés",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "INTER03",
+    "domain": "INTER",
+    "domain_name": "🔌 Interopérabilité & fonctionnement local",
+    "title": "Remplaçabilité des équipements",
+    "critical": false,
+    "question": "Si un fabricant d'ampoules ou de prises disparaît, pouvez-vous remplacer facilement ses modules par une autre marque sans tout reconstruire ?",
+    "why": "Choisir des appareils interchangeables protège votre investissement contre l'obsolescence programmée.",
+    "options": [
+      {
+        "label": "Oui, utilisation exclusive de standards universels interchangeables sans friction",
+        "score": 4
+      },
+      {
+        "label": "La plupart des équipements sont remplaçables sans impacter le reste du système",
+        "score": 3
+      },
+      {
+        "label": "Quelques équipements propriétaires difficiles à remplacer par une autre marque",
+        "score": 2
+      },
+      {
+        "label": "Remplacement complexe nécessitant de revoir les scénarios",
+        "score": 1
+      },
+      {
+        "label": "Équipements totalement verrouillés à un écosystème fermé",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "INTER04",
+    "domain": "INTER",
+    "domain_name": "🔌 Interopérabilité & fonctionnement local",
+    "title": "Organisation de Home Assistant",
+    "critical": false,
+    "question": "Votre configuration Home Assistant est-elle bien ordonnée (appareils assignés à des pièces, entités triées, zones définies) ?",
+    "why": "Un système bien rangé par pièce simplifie la création d'automatisations et rend les tableaux de bord clairs.",
+    "options": [
+      {
+        "label": "Organisation exemplaire : 100 % des appareils assignés à leur pièce, zones et catégories rigoureusement renseignées",
+        "score": 4
+      },
+      {
+        "label": "Bonne organisation générale avec la majorité des appareils rangés par pièce",
+        "score": 3
+      },
+      {
+        "label": "Organisation partielle : plusieurs appareils restent non assignés à une pièce",
+        "score": 2
+      },
+      {
+        "label": "Configuration en vrac avec peu de classement",
+        "score": 1
+      },
+      {
+        "label": "Aucun rangement : toutes les entités sont mélangées sans structure",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "INTER05",
+    "domain": "INTER",
+    "domain_name": "🔌 Interopérabilité & fonctionnement local",
+    "title": "Standardisation de l’installation",
+    "critical": false,
+    "question": "Utilisez-vous des standards de communication homogènes et reconnus (formats d'échange structurés, MQTT, Matter) ?",
+    "why": "Standardiser la communication rend le système plus rapide, plus léger et facile à faire évoluer au fil des ans.",
+    "options": [
+      {
+        "label": "Oui, architecture locale homogène et standardisée facilitant les évolutions futures",
+        "score": 4
+      },
+      {
+        "label": "Standards ouverts appliqués sur la majorité des intégrations",
+        "score": 3
+      },
+      {
+        "label": "Mélange de plusieurs méthodes sans homogénéité stricte",
+        "score": 2
+      },
+      {
+        "label": "Peu de standardisation, solutions disparates",
+        "score": 1
+      },
+      {
+        "label": "Aucun standard : empilement de technologies hétérogènes non coordonnées",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "INTER06",
+    "domain": "INTER",
+    "domain_name": "🔌 Interopérabilité & fonctionnement local",
+    "title": "Centralisation des intégrations dans Home Assistant",
+    "critical": false,
+    "question": "L'ensemble de vos objets et passerelles domotiques est-il centralisé sous Home Assistant sans devoir ouvrir plusieurs applications tierces ?",
+    "why": "Centraliser tous les appareils dans un seul système permet de faire dialoguer des marques différentes qui ne se parlent pas habituellement.",
+    "options": [
+      {
+        "label": "Oui, 100 % des équipements sont pilotables et automatisables depuis Home Assistant",
+        "score": 4
+      },
+      {
+        "label": "La quasi-totalité des appareils est centralisée, avec une seule application tierce résiduelle",
+        "score": 3
+      },
+      {
+        "label": "La majorité est centralisée mais nous utilisons encore 2 ou 3 applications de fabricants",
+        "score": 2
+      },
+      {
+        "label": "Moins de la moitié des objets est regroupée dans Home Assistant",
+        "score": 1
+      },
+      {
+        "label": "Pas de centralisation : chaque famille d'objets s'utilise dans sa propre application",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "UX01",
     "domain": "UX",
-    "domain_name": "📱 Expérience & Interfaces",
-    "title": "Commandes physiques intuitives",
-    "question": "Les membres du foyer et les invités peuvent-ils utiliser les lumières et volets sans jamais avoir besoin d'un smartphone ?",
-    "explanation": "L'utilisation quotidienne des fonctions de base ne nécessite pas de sortir son smartphone : boutons physiques intuitifs et télécommandes accessibles dans chaque pièce.",
-    "critical": false
+    "domain_name": "📱 Confort & expérience utilisateur",
+    "title": "Commandes physiques simples et accessibles",
+    "critical": false,
+    "question": "Les personnes vivant avec vous ou vos invités peuvent-ils utiliser les éclairages et volets naturellement sans explication technique ?",
+    "why": "La meilleure domotique est celle qui se fait oublier et qui ne complique jamais les gestes du quotidien pour vos proches.",
+    "options": [
+      {
+        "label": "Oui, boutons muraux clairs avec retour visuel, télécommandes d'ambiance et aucune friction",
+        "score": 4
+      },
+      {
+        "label": "Utilisation simple et naturelle pour la famille et les invités réguliers",
+        "score": 3
+      },
+      {
+        "label": "Globalement accessible avec parfois quelques confusions sur les doubles appuis",
+        "score": 2
+      },
+      {
+        "label": "Utilisation complexe nécessitant des explications pour les invités",
+        "score": 1
+      },
+      {
+        "label": "Inutilisable sans formation préalable ou sans l'application sur smartphone",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": true,
+    "not_applicable_label": "Non applicable (je vis seul)"
   },
   {
     "id": "UX02",
     "domain": "UX",
-    "domain_name": "📱 Expérience & Interfaces",
-    "title": "Dashboard famille",
-    "question": "Votre famille dispose-t-elle d'un dashboard épuré et simple d'utilisation au quotidien ?",
-    "explanation": "Présence d'une interface Lovelace épurée, claire et simplifiée spécialement conçue pour les membres du foyer et les invités (tablette murale ou vue mobile).",
-    "critical": false
+    "domain_name": "📱 Confort & expérience utilisateur",
+    "title": "Dashboard familial",
+    "critical": false,
+    "question": "Avez-vous mis en place un tableau de bord simplifié et épuré regroupant uniquement les commandes indispensables du quotidien ?",
+    "why": "Une interface claire et sans jargon donne confiance aux membres du foyer sans risque de dérégler l'installation.",
+    "options": [
+      {
+        "label": "Oui, interface d'excellence épurée, adaptée aux enfants et conjoints (vue tablette murale / kiosk)",
+        "score": 4
+      },
+      {
+        "label": "Tableau de bord famille clair avec accès direct aux 10 actions indispensables",
+        "score": 3
+      },
+      {
+        "label": "Tableau de bord simplifié existant mais encore un peu encombré d'éléments techniques",
+        "score": 2
+      },
+      {
+        "label": "Tableau de bord personnalisé mais trop complexe pour les personnes non initiées",
+        "score": 1
+      },
+      {
+        "label": "Seulement la vue brute par défaut avec des centaines d'entités techniques en vrac",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "UX03",
     "domain": "UX",
-    "domain_name": "📱 Expérience & Interfaces",
-    "title": "Adaptation aux appareils",
-    "question": "Vos dashboards s'affichent-ils confortablement sur smartphone comme sur tablette sans déformation ?",
-    "explanation": "Les tableaux de bord sont responsifs et parfaitement lisibles sur smartphone, tablette murale et écran d'ordinateur.",
-    "critical": false
+    "domain_name": "📱 Confort & expérience utilisateur",
+    "title": "Adaptation aux différents écrans",
+    "critical": false,
+    "question": "Vos tableaux de bord sont-ils confortables et adaptés à la taille de chaque écran (smartphone, tablette, PC) ?",
+    "why": "Adapter les boutons et l'affichage à l'écran utilisé rend le pilotage rapide et agréable dans toutes les situations.",
+    "options": [
+      {
+        "label": "Vues dédiées parfaitement optimisées pour smartphone, tablette murale et grand écran",
+        "score": 4
+      },
+      {
+        "label": "Navigation fluide sur smartphone et disposition claire sur tablette et PC",
+        "score": 3
+      },
+      {
+        "label": "Lisible sur smartphone mais non optimisé pour tablette (grands espaces vides)",
+        "score": 2
+      },
+      {
+        "label": "Conçu pour grand écran uniquement, navigation difficile sur smartphone",
+        "score": 1
+      },
+      {
+        "label": "Illisible sur mobile (éléments coupés, colonnes trop étroites)",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "UX04",
     "domain": "UX",
-    "domain_name": "📱 Expérience & Interfaces",
+    "domain_name": "📱 Confort & expérience utilisateur",
     "title": "Notifications pertinentes",
-    "question": "Vos notifications domotiques sont-elles utiles, ciblées et sans spam intempestif ?",
-    "explanation": "Les notifications envoyées sont utiles, ciblées, hiérarchisées et évitent tout spam d'alertes inutiles.",
-    "critical": false
+    "critical": false,
+    "question": "Les notifications reçues sur smartphone sont-elles réservées aux alertes utiles et urgentes (sans spam nocturne) ?",
+    "why": "Recevoir trop de notifications inutiles conduit à ignorer les alertes, y compris celles qui signalent une fuite ou un problème de sécurité.",
+    "options": [
+      {
+        "label": "Système exemplaire : alertes hiérarchisées, sons personnalisés et boutons d'action directs",
+        "score": 4
+      },
+      {
+        "label": "Notifications ciblées : alertes critiques prioritaires et filtrage des alertes nocturnes",
+        "score": 3
+      },
+      {
+        "label": "Notifications utiles mais sans distinction d'urgence entre sécurité et météo",
+        "score": 2
+      },
+      {
+        "label": "Nombreuses notifications reçues à toute heure y compris la nuit",
+        "score": 1
+      },
+      {
+        "label": "Spam quotidien de notifications futiles ou aucune alerte configurée",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "UX05",
     "domain": "UX",
-    "domain_name": "📱 Expérience & Interfaces",
+    "domain_name": "📱 Confort & expérience utilisateur",
     "title": "Automatisations discrètes",
-    "question": "Votre domotique est-elle discrète et naturelle pour tous les habitants (pas d'extinctions inopportunes ni de surprises) ?",
-    "explanation": "Les automatisations améliorent le confort de façon transparente et silencieuse sans contraindre ni surprendre les occupants.",
-    "critical": false
+    "critical": false,
+    "question": "Vos automatisations se font-elles discrètes sans surprendre ni agacer les membres du foyer (lumière qui s'éteint inopportunément) ?",
+    "why": "Une automatisation bien calibrée doit anticiper les besoins sans forcer les occupants à adapter leurs habitudes à la machine.",
+    "options": [
+      {
+        "label": "Discrétion totale : la maison réagit naturellement, satisfaction unanime du foyer et des invités",
+        "score": 4
+      },
+      {
+        "label": "Domotique fluide et discrète qui anticipe les besoins sans rien imposer",
+        "score": 3
+      },
+      {
+        "label": "Automatisations acceptées mais quelques frictions lors de changements d'habitudes",
+        "score": 2
+      },
+      {
+        "label": "Frustrations régulières exprimées par les proches sur des automatismes imprévisibles",
+        "score": 1
+      },
+      {
+        "label": "Domotique intrusive et agaçante (lumières qui s'éteignent sur des personnes immobiles)",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "UX06",
     "domain": "UX",
-    "domain_name": "📱 Expérience & Interfaces",
-    "title": "Override utilisateur",
-    "question": "Si vous modifiez manuellement un volet ou une lumière, Home Assistant respecte-t-il votre choix sans forcer son automatisme ?",
-    "explanation": "L'utilisateur peut facilement reprendre la main manuellement sur une automatisation (la commande manuelle reste toujours prioritaire sur l'automatisme).",
-    "critical": false
+    "domain_name": "📱 Confort & expérience utilisateur",
+    "title": "Priorité donnée à l’utilisateur / override manuel",
+    "critical": false,
+    "question": "Si vous éteignez manuellement une lumière ou forcez un volet, l'automatisme s'arrête-t-il pour respecter votre choix ?",
+    "why": "L'humain doit toujours avoir le dernier mot sur la machine en un seul clic sans lutter contre le système.",
+    "options": [
+      {
+        "label": "Gestion exemplaire : priorité manuelle immédiatement respectée avec reprise automatique transparente",
+        "score": 4
+      },
+      {
+        "label": "Tout appui manuel sur un bouton suspend l'automatisme pendant une durée définie",
+        "score": 3
+      },
+      {
+        "label": "Priorité manuelle gérée mais temporaire sans possibilité de forçage prolongé",
+        "score": 2
+      },
+      {
+        "label": "Reprise en main manuelle difficile nécessitant de désactiver le scénario dans les paramètres",
+        "score": 1
+      },
+      {
+        "label": "L'automatisme lutte contre l'utilisateur (rallume la lumière 5 secondes après l'extinction)",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   },
   {
     "id": "UX07",
     "domain": "UX",
-    "domain_name": "📱 Expérience & Interfaces",
+    "domain_name": "📱 Confort & expérience utilisateur",
     "title": "Réactivité du système",
-    "question": "Lorsque vous appuyez sur un bouton, l'allumage ou l'action se produit-elle instantanément (< 300ms) ?",
-    "explanation": "Les principales actions domotiques (appui sur interrupteur, déclenchement de scène) offrent un temps de réponse instantané et prévisible (< 300 ms).",
-    "critical": false
+    "critical": false,
+    "question": "Lorsque vous appuyez sur un interrupteur ou déclenchez une action, la réaction de l'appareil est-elle instantanée ?",
+    "why": "Une latence perceptible donne l'impression que le système n'a pas compris la commande et pousse à réappuyer plusieurs fois inutilement.",
+    "options": [
+      {
+        "label": "Instantanée et imperceptible (< 150 ms), identique à un câblage électrique traditionnel",
+        "score": 4
+      },
+      {
+        "label": "Réponse rapide et fluide (< 300 ms) sur la totalité des commandes locales",
+        "score": 3
+      },
+      {
+        "label": "Temps de réponse correct (500 ms à 1s) mais variable selon la charge de la box",
+        "score": 2
+      },
+      {
+        "label": "Latences perceptibles (1 à 2 secondes) dues à des allers-retours vers des serveurs distants",
+        "score": 1
+      },
+      {
+        "label": "Latences très lentes et imprévisibles (> 2 secondes) à chaque appui bouton",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "MAINT01",
+    "domain": "MAINT",
+    "domain_name": "🛠️ Maintenance & documentation",
+    "title": "Convention de nommage",
+    "critical": false,
+    "question": "Vos appareils et entités sont-ils tous nommés de façon claire et ordonnée (ex: Lumière Salon, Température Chambre) ?",
+    "why": "Un nommage clair par pièce évite les erreurs lors de la création d'automatisations et simplifie grandement la maintenance.",
+    "options": [
+      {
+        "label": "Nomenclature exemplaire sur 100 % des entités par pièce sans aucun identifiant brut d'usine",
+        "score": 4
+      },
+      {
+        "label": "Convention de nommage appliquée sur plus de 80 % du parc domotique",
+        "score": 3
+      },
+      {
+        "label": "La plupart des entités ont un nom compréhensible mais sans convention homogène",
+        "score": 2
+      },
+      {
+        "label": "Moins de 50 % des entités sont proprement renommées",
+        "score": 1
+      },
+      {
+        "label": "Majorité d'entités avec des noms génériques d'usine ou codes hexadécimaux bruts",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "MAINT02",
+    "domain": "MAINT",
+    "domain_name": "🛠️ Maintenance & documentation",
+    "title": "Documentation de l’installation",
+    "critical": false,
+    "question": "Avez-vous consigné sur un document simple (papier ou numérique) les informations essentielles de votre installation (adresses IP, accès de secours, matériel) ?",
+    "why": "Si vous êtes absent ou indisponible, une documentation minimale permet à un proche ou à un technicien de comprendre l'installation et de dépanner.",
+    "options": [
+      {
+        "label": "Documentation complète et à jour : schéma, plan réseau, guide pour les proches et inventaire",
+        "score": 4
+      },
+      {
+        "label": "Dossier technique clair récapitulant les adresses IP, accès de secours et liste des modules",
+        "score": 3
+      },
+      {
+        "label": "Tableau des adresses IP et liste du matériel existant mais non tenus à jour",
+        "score": 2
+      },
+      {
+        "label": "Quelques notes éparses ou fichiers textes non structurés",
+        "score": 1
+      },
+      {
+        "label": "Aucune documentation écrite, toute la connaissance est uniquement dans ma tête",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "MAINT03",
+    "domain": "MAINT",
+    "domain_name": "🛠️ Maintenance & documentation",
+    "title": "Documentation des automatisations",
+    "critical": false,
+    "question": "Vos automatisations et scénarios comportent-ils des titres explicites et une description de leur rôle ?",
+    "why": "Après plusieurs mois, il devient difficile de se souvenir de la logique exacte d'un scénario complexe sans une description courte.",
+    "options": [
+      {
+        "label": "100 % des automatisations et scripts possèdent une description complète et des commentaires clairs",
+        "score": 4
+      },
+      {
+        "label": "Plus de 80 % des automatisations possèdent un titre explicite et une description détaillée",
+        "score": 3
+      },
+      {
+        "label": "Description renseignée uniquement sur les quelques automatisations complexes",
+        "score": 2
+      },
+      {
+        "label": "Noms compréhensibles mais champ description vide sur la quasi-totalité des scénarios",
+        "score": 1
+      },
+      {
+        "label": "Aucune description avec des noms par défaut obscurs (ex: Nouvelle automatisation 3)",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "MAINT04",
+    "domain": "MAINT",
+    "domain_name": "🛠️ Maintenance & documentation",
+    "title": "Nettoyage des entités inutilisées",
+    "critical": false,
+    "question": "Supprimez-vous régulièrement les anciens appareils hors d'usage ou remplacés de votre registre Home Assistant ?",
+    "why": "Conserver des entités fantômes alourdit la base de données et peut générer des erreurs dans vos journaux système.",
+    "options": [
+      {
+        "label": "Registre d'entités rigoureusement purgé, aucune entité fantôme, base de données optimisée",
+        "score": 4
+      },
+      {
+        "label": "Les entités orphelines sont supprimées au fur et à mesure du remplacement du matériel",
+        "score": 3
+      },
+      {
+        "label": "Nettoyage occasionnel des appareils retirés",
+        "score": 2
+      },
+      {
+        "label": "Nettoyage très rare, nombreuses entités orphelines visibles dans les outils de développement",
+        "score": 1
+      },
+      {
+        "label": "Des dizaines d'anciennes entités supprimées ou hors d'usage encombrent le registre",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "MAINT05",
+    "domain": "MAINT",
+    "domain_name": "🛠️ Maintenance & documentation",
+    "title": "Tableau de santé technique",
+    "critical": false,
+    "question": "Disposez-vous d'une vue d'ensemble ou d'une alerte automatique dès qu'une pile de capteur devient faible ou qu'un appareil ne répond plus ?",
+    "why": "Être prévenu avant l'extinction complète d'un capteur évite les pannes surprises de détection ou de chauffage en plein hiver.",
+    "options": [
+      {
+        "label": "Vue santé complète + alerte automatique dès qu'une pile passe sous 15 % avec modèle de pile précisé",
+        "score": 4
+      },
+      {
+        "label": "Dashboard technique complet regroupant l'état des piles, les métriques système et appareils hors ligne",
+        "score": 3
+      },
+      {
+        "label": "Présence d'une carte basique listant les piles faibles sur un tableau de bord",
+        "score": 2
+      },
+      {
+        "label": "Niveau des piles consultable uniquement appareil par appareil dans les paramètres",
+        "score": 1
+      },
+      {
+        "label": "Aucun suivi de l'état technique : une pile vide est découverte quand l'appareil ne répond plus",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": true,
+    "not_applicable_label": "Non applicable (aucun appareil à pile)"
+  },
+  {
+    "id": "MAINT06",
+    "domain": "MAINT",
+    "domain_name": "🛠️ Maintenance & documentation",
+    "title": "Procédure de reprise / récupération",
+    "critical": false,
+    "question": "En cas de panne matérielle de votre serveur domotique, avez-vous une procédure ou un support prêt pour réinstaller rapidement ?",
+    "why": "Un plan de reprise clair permet de remettre en service la maison en moins d'une heure en cas de défaillance matérielle.",
+    "options": [
+      {
+        "label": "Plan de reprise complet : document accessible hors ligne, clé USB de secours prête et procédure claire",
+        "score": 4
+      },
+      {
+        "label": "Procédure de reprise formalisée étape par étape (support d'installation, méthode de restauration)",
+        "score": 3
+      },
+      {
+        "label": "Je sais réinstaller et restaurer le système de mémoire, mais je n'ai pas de procédure écrite formalisée (ou procédure incomplète sans mots de passe)",
+        "score": 2
+      },
+      {
+        "label": "Connaissance orale très sommaire des étapes sans document ni support prêt",
+        "score": 1
+      },
+      {
+        "label": "Aucune procédure : en cas de crash du serveur, je ne saurais pas par où commencer",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
+  },
+  {
+    "id": "MAINT07",
+    "domain": "MAINT",
+    "domain_name": "🛠️ Maintenance & documentation",
+    "title": "Historique des modifications importantes",
+    "critical": false,
+    "question": "Gardez-vous une trace ou faites-vous une sauvegarde étiquetée avant d'effectuer des modifications importantes sur votre système ?",
+    "why": "Garder une trace des modifications permet d'identifier immédiatement l'origine d'un dysfonctionnement apparu récemment.",
+    "options": [
+      {
+        "label": "Traçabilité exemplaire : configuration versionnée sous Git ou journal des révisions exhaustif",
+        "score": 4
+      },
+      {
+        "label": "Historique régulier et daté avec sauvegardes étiquetées avant chaque gros changement",
+        "score": 3
+      },
+      {
+        "label": "Journal de bord textuel tenu à jour lors des modifications majeures",
+        "score": 2
+      },
+      {
+        "label": "Notes sporadiques sans date ni suivi structuré",
+        "score": 1
+      },
+      {
+        "label": "Aucun historique des modifications",
+        "score": 0
+      }
+    ],
+    "has_not_applicable": false
   }
 ];
 
@@ -553,6 +1919,7 @@ class SmartHomeScoreCard extends HTMLElement {
     this._view = 'welcome'; // 'welcome' | 'audit' | 'cockpit'
     this._activeTab = 'overview';
     this._currentQuestionIndex = 0;
+    this._showWhy = false;
     this.attachShadow({ mode: 'open' });
   }
 
@@ -710,76 +2077,92 @@ class SmartHomeScoreCard extends HTMLElement {
           padding: 18px;
           margin-bottom: 16px;
         }
-        .shs-domain-badge {
-          display: inline-block;
-          background: rgba(59, 130, 246, 0.2);
-          color: #93c5fd;
-          font-size: 0.8rem;
-          font-weight: 700;
-          padding: 4px 10px;
-          border-radius: 6px;
-          margin-bottom: 12px;
+        .shs-domain-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
         }
-        .shs-question-title {
+        .shs-meta-sub {
+          font-size: 0.78rem;
+          color: #94a3b8;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .shs-question-main {
           font-size: 1.15rem;
           font-weight: 700;
           color: #f8fafc;
-          margin-bottom: 8px;
-          line-height: 1.4;
+          margin-bottom: 12px;
+          line-height: 1.45;
         }
-        .shs-question-desc {
-          color: var(--shs-muted);
-          font-size: 0.9rem;
+        .shs-why-btn {
+          background: transparent;
+          border: none;
+          color: #60a5fa;
+          font-size: 0.82rem;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 0;
+          margin-bottom: 14px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .shs-why-content {
+          background: rgba(59, 130, 246, 0.08);
+          border-left: 3px solid #3b82f6;
+          border-radius: 4px;
+          padding: 10px 12px;
+          font-size: 0.85rem;
+          color: #cbd5e1;
           line-height: 1.45;
           margin-bottom: 16px;
         }
         .shs-answers-grid {
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 8px;
           margin-bottom: 16px;
         }
         .shs-ans-btn {
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.12);
           color: var(--shs-text);
-          padding: 12px 16px;
+          padding: 12px 14px;
           border-radius: 8px;
-          font-size: 0.95rem;
-          font-weight: 600;
+          font-size: 0.9rem;
+          font-weight: 500;
           text-align: left;
           cursor: pointer;
           transition: all 0.2s;
           display: flex;
           align-items: center;
           gap: 10px;
+          line-height: 1.35;
         }
         .shs-ans-btn:hover {
-          background: rgba(59, 130, 246, 0.2);
+          background: rgba(59, 130, 246, 0.18);
           border-color: #3b82f6;
           color: #93c5fd;
         }
-        .shs-ans-btn.ans-yes:hover {
-          background: rgba(16, 185, 129, 0.2);
-          border-color: #10b981;
-          color: #a7f3d0;
+        .shs-ans-btn-na {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px dashed rgba(255, 255, 255, 0.15);
+          color: var(--shs-muted);
         }
-        .shs-ans-btn.ans-partial:hover {
-          background: rgba(245, 158, 11, 0.2);
-          border-color: #f59e0b;
-          color: #fde68a;
-        }
-        .shs-ans-btn.ans-no:hover {
-          background: rgba(239, 68, 68, 0.2);
-          border-color: #ef4444;
-          color: #fca5a5;
+        .shs-ans-btn-na:hover {
+          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(255, 255, 255, 0.3);
+          color: var(--shs-text);
         }
         .shs-nav-row {
           display: flex;
           justify-content: space-between;
           align-items: center;
           gap: 10px;
-          margin-top: 12px;
+          margin-top: 14px;
         }
         .shs-score-hero {
           background: rgba(0, 0, 0, 0.25);
@@ -872,7 +2255,7 @@ class SmartHomeScoreCard extends HTMLElement {
           <div class="shs-branding">
             <span>🏠 Smart Home Score</span>
           </div>
-          <span class="shs-badge-beta">Bêta v0.7.0-beta.4</span>
+          <span class="shs-badge-beta">Bêta v0.7.0-beta.5</span>
         </div>
 
         ${this._renderCurrentView(scoreVal, completenessVal, maturityText, criticalCount, potentialGain, isProvisional)}
@@ -888,7 +2271,7 @@ class SmartHomeScoreCard extends HTMLElement {
         <div class="shs-welcome-box">
           <div class="shs-welcome-title">Bienvenue dans Smart Home Score</div>
           <div class="shs-welcome-desc">
-            Évaluez l'autonomie, la sécurité et la résilience de votre installation Home Assistant en quelques minutes (100 % local, 0 cloud).
+            Évaluez l'autonomie, la sécurité et la résilience de votre logement en quelques questions simples et concrètes (100 % local, 0 cloud).
           </div>
           <button class="shs-btn" id="btn-start-first-audit">
             🚀 Lancer mon premier audit
@@ -904,8 +2287,8 @@ class SmartHomeScoreCard extends HTMLElement {
 
       return `
         <div class="shs-audit-box">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <span class="shs-domain-badge">${crit.domain_name}</span>
+          <div class="shs-domain-row">
+            <span class="shs-meta-sub">${crit.id} · ${crit.domain_name}</span>
             <span style="font-size:0.8rem; color:var(--shs-muted); font-weight:600;">Question ${curIdx + 1} / ${total}</span>
           </div>
 
@@ -913,28 +2296,40 @@ class SmartHomeScoreCard extends HTMLElement {
             <div class="shs-progress-fill" style="width: ${((curIdx + 1) / total) * 100}%;"></div>
           </div>
 
-          <div class="shs-question-title">${crit.id} — ${crit.title}</div>
-          <div class="shs-question-desc">${crit.explanation || crit.question}</div>
+          <div class="shs-question-main">${crit.question}</div>
+
+          <button class="shs-why-btn" id="btn-toggle-why">
+            ℹ️ ${this._showWhy ? 'Masquer les explications' : 'Pourquoi cette question ?'}
+          </button>
+
+          ${this._showWhy ? `
+            <div class="shs-why-content">
+              <strong>${crit.title} :</strong> ${crit.why}
+            </div>
+          ` : ''}
 
           <div class="shs-answers-grid">
-            <button class="shs-ans-btn ans-yes" data-answer="yes">
-              <span>🟢</span> <span>Oui totalement</span>
-            </button>
-            <button class="shs-ans-btn ans-partial" data-answer="partial">
-              <span>🟡</span> <span>Partiellement</span>
-            </button>
-            <button class="shs-ans-btn ans-no" data-answer="no">
-              <span>🔴</span> <span>Non</span>
-            </button>
-            <button class="shs-ans-btn" data-answer="unknown">
-              <span>⚪</span> <span>Je ne sais pas / Plus tard</span>
+            ${crit.options.map(opt => `
+              <button class="shs-ans-btn" data-action="score" data-score="${opt.score}">
+                <span>🔹</span> <span>${opt.label}</span>
+              </button>
+            `).join('')}
+
+            ${crit.has_not_applicable ? `
+              <button class="shs-ans-btn shs-ans-btn-na" data-action="na">
+                <span>⚪</span> <span>${crit.not_applicable_label || 'Non applicable à mon logement'}</span>
+              </button>
+            ` : ''}
+
+            <button class="shs-ans-btn shs-ans-btn-na" data-action="skip">
+              <span>❔</span> <span>Je ne sais pas / Plus tard</span>
             </button>
           </div>
 
           <div class="shs-nav-row">
             ${curIdx > 0 ? `
               <button class="shs-btn shs-btn-sec" id="btn-prev-q" style="width:auto; padding:8px 14px; font-size:0.85rem;">
-                ◀️ Précédent
+                ◀️ Question précédente
               </button>
             ` : '<div></div>'}
             <button class="shs-btn shs-btn-sec" id="btn-view-summary" style="width:auto; padding:8px 14px; font-size:0.85rem;">
@@ -980,7 +2375,7 @@ class SmartHomeScoreCard extends HTMLElement {
 
       <div style="display:flex; gap:8px; margin-top:14px;">
         <button class="shs-btn" id="btn-resume-audit" style="font-size:0.85rem;">
-          📝 Reprendre / Modifier l'audit
+          📝 Reprendre / Modifier l'entretien
         </button>
         <button class="shs-btn shs-btn-sec" id="btn-scan" style="font-size:0.85rem; width:auto;">
           🔄 Scan
@@ -994,12 +2389,12 @@ class SmartHomeScoreCard extends HTMLElement {
       const getDom = (key) => this._getEntity(key)?.state ?? '—';
       return `
         <div class="shs-domain-grid">
-          <div class="shs-domain-card"><div class="shs-domain-title">⚡ Électricité</div><div class="shs-domain-score">${getDom('elec_score')} / 100</div></div>
+          <div class="shs-domain-card"><div class="shs-domain-title">⚡ Sécurité électrique</div><div class="shs-domain-score">${getDom('elec_score')} / 100</div></div>
           <div class="shs-domain-card"><div class="shs-domain-title">🔒 Cybersécurité</div><div class="shs-domain-score">${getDom('cyber_score')} / 100</div></div>
           <div class="shs-domain-card"><div class="shs-domain-title">🛡️ Résilience</div><div class="shs-domain-score">${getDom('res_score')} / 100</div></div>
           <div class="shs-domain-card"><div class="shs-domain-title">⚙️ Automatisations</div><div class="shs-domain-score">${getDom('auto_score')} / 100</div></div>
           <div class="shs-domain-card"><div class="shs-domain-title">☀️ Énergie</div><div class="shs-domain-score">${getDom('ener_score')} / 100</div></div>
-          <div class="shs-domain-card"><div class="shs-domain-title">🔌 Protocoles Locaux</div><div class="shs-domain-score">${getDom('inter_score')} / 100</div></div>
+          <div class="shs-domain-card"><div class="shs-domain-title">🔌 Interopérabilité</div><div class="shs-domain-score">${getDom('inter_score')} / 100</div></div>
           <div class="shs-domain-card"><div class="shs-domain-title">📱 Expérience / UX</div><div class="shs-domain-score">${getDom('ux_score')} / 100</div></div>
           <div class="shs-domain-card"><div class="shs-domain-title">🛠️ Maintenance</div><div class="shs-domain-score">${getDom('maint_score')} / 100</div></div>
         </div>
@@ -1021,7 +2416,7 @@ class SmartHomeScoreCard extends HTMLElement {
       <div style="font-size:0.85rem; color:var(--shs-muted); line-height:1.5;">
         ${isProvisional ? `
           <div style="background:rgba(245,158,11,0.1); border-left:3px solid #f59e0b; padding:8px 12px; border-radius:4px; margin-bottom:8px;">
-            Score provisoire : répondez aux questions restantes pour finaliser votre bilan complet.
+            Entretien partiel : répondez aux questions restantes pour finaliser votre bilan complet.
           </div>
         ` : `
           <div style="background:rgba(16,185,129,0.1); border-left:3px solid #10b981; padding:8px 12px; border-radius:4px; margin-bottom:8px; color:#a7f3d0;">
@@ -1036,23 +2431,33 @@ class SmartHomeScoreCard extends HTMLElement {
     this.shadowRoot.getElementById('btn-start-first-audit')?.addEventListener('click', () => {
       this._view = 'audit';
       this._currentQuestionIndex = 0;
+      this._showWhy = false;
       this._hass?.callService('smart_home_score', 'run_analysis', {});
+      this._render();
+    });
+
+    this.shadowRoot.getElementById('btn-toggle-why')?.addEventListener('click', () => {
+      this._showWhy = !this._showWhy;
       this._render();
     });
 
     this.shadowRoot.querySelectorAll('.shs-ans-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const ansKey = e.currentTarget.getAttribute('data-answer');
+        const action = e.currentTarget.getAttribute('data-action');
         const crit = SHS_CRITERIA[this._currentQuestionIndex];
         if (crit) {
-          if (ansKey === 'unknown') {
+          if (action === 'skip') {
             this._hass?.callService('smart_home_score', 'skip_question', { criterion_id: crit.id });
-          } else {
-            this._hass?.callService('smart_home_score', 'submit_answer', { criterion_id: crit.id, answer_key: ansKey });
+          } else if (action === 'na') {
+            this._hass?.callService('smart_home_score', 'submit_answer', { criterion_id: crit.id, answer_key: 'not_applicable' });
+          } else if (action === 'score') {
+            const score = parseInt(e.currentTarget.getAttribute('data-score'), 10);
+            this._hass?.callService('smart_home_score', 'submit_answer', { criterion_id: crit.id, answer_key: String(score) });
           }
         }
         if (this._currentQuestionIndex < SHS_CRITERIA.length - 1) {
           this._currentQuestionIndex++;
+          this._showWhy = false;
         } else {
           this._view = 'cockpit';
         }
@@ -1063,6 +2468,7 @@ class SmartHomeScoreCard extends HTMLElement {
     this.shadowRoot.getElementById('btn-prev-q')?.addEventListener('click', () => {
       if (this._currentQuestionIndex > 0) {
         this._currentQuestionIndex--;
+        this._showWhy = false;
         this._render();
       }
     });
@@ -1074,6 +2480,7 @@ class SmartHomeScoreCard extends HTMLElement {
 
     this.shadowRoot.getElementById('btn-resume-audit')?.addEventListener('click', () => {
       this._view = 'audit';
+      this._showWhy = false;
       this._render();
     });
 
@@ -1108,7 +2515,7 @@ const cardEntry = {
   type: 'smart-home-score-card',
   name: 'Smart Home Score',
   preview: true,
-  description: "Indice de maturité et plan d'amélioration de votre maison connectée",
+  description: "Entretien d'audit et indice de maturité de votre maison connectée",
   documentationURL: 'https://github.com/nano2sillery/smart_home_score'
 };
 

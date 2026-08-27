@@ -1,5 +1,13 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.5] - 2026-08-27
+### Amélioration UX Entretien d'Audit Humain & Fidélité Référentiel v1.0
+- **Questions en Langage Naturel** : 59 questions formulées concrètement sur la vie du logement.
+- **Réponses Contextualisées** : Choix de réponses fidèles aux niveaux 0 à 4 historiques, sans note apparente pour l'utilisateur.
+- **Boutons 'Pourquoi cette question ?'** : Explication du sens et de l'intérêt de chaque critère en un clic.
+- **Séparation Stricte** : Distinction nette entre *Je ne sais pas / Plus tard* (NEEDS_REVIEW) et *Non applicable* (NOT_APPLICABLE).
+- **Non-régression Validée** : 63 tests unitaires au vert, conservation exacte du benchmark officiel à 83,1 / 100.
+
 ## [0.7.0-beta.4] - 2026-08-27
 ### Corrigé (Assistant d'Audit Interactif Intégré)
 - **Déclenchement Interactif Immédiat** : Le bouton *« 🚀 Lancer mon premier audit »* ouvre immédiatement le questionnaire interactif pas-à-pas directement sur la carte Lovelace.

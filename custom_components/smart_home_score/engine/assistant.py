@@ -911,7 +911,7 @@ class AuditAssistant:
             st = CriterionState(criterion_id=criterion_id)
 
         # 1. If "Je ne sais pas" / "Faire plus tard" -> No score assigned, NEEDS_REVIEW
-        if not selected_option or selected_option.is_unknown:
+        if answer_key in ("unknown", "skip") or (selected_option and selected_option.is_unknown):
             st.effective_score = None
             st.status = CriterionStatus.NEEDS_REVIEW
             st.user_confirmed = True
@@ -920,7 +920,7 @@ class AuditAssistant:
             return st, False
 
         # 2. If "Sans objet" / NOT_APPLICABLE
-        if selected_option.is_not_applicable:
+        if answer_key == "not_applicable" or (selected_option and selected_option.is_not_applicable):
             st.effective_score = None
             st.status = CriterionStatus.NOT_APPLICABLE
             st.applicable = False
@@ -929,7 +929,17 @@ class AuditAssistant:
             return st, True
 
         # 3. Discrete valid score (0..4)
-        st.effective_score = selected_option.score
+        if answer_key in ("0", "1", "2", "3", "4"):
+            score_val = int(answer_key)
+        elif selected_option and selected_option.score is not None:
+            score_val = selected_option.score
+        else:
+            st.effective_score = None
+            st.status = CriterionStatus.NEEDS_REVIEW
+            criteria_states[criterion_id] = st
+            return st, False
+
+        st.effective_score = score_val
         st.status = CriterionStatus.CONFIRMED
         st.user_confirmed = True
         st.needs_review = False
