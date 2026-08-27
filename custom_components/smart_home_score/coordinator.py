@@ -114,7 +114,12 @@ class SmartHomeScoreCoordinator(DataUpdateCoordinator[AuditResult]):
         if save_on_complete:
             await self.store.async_save(self.criteria_states, last_audit_date=self.last_audit_date)
 
-        return self._calculate_current_result()
+        res = self._calculate_current_result()
+        if hasattr(self, "async_set_updated_data"):
+            self.async_set_updated_data(res)
+        else:
+            self.data = res
+        return res
 
     def _calculate_current_result(self) -> AuditResult:
         """Calculate audit result from current states."""

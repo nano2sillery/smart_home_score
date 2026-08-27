@@ -1958,16 +1958,29 @@ class SmartHomeScoreCard extends HTMLElement {
     return globalScoreSensor?.attributes?.criteria_states || {};
   }
 
-  _getPendingCriteria() {
+  _getScanBreakdown() {
     const states = this._getCriteriaStates();
-    return SHS_CRITERIA.filter(c => {
+    let autoCount = 0;
+    let capabilityCount = 0;
+    let pendingList = [];
+
+    for (const c of SHS_CRITERIA) {
       const st = states[c.id];
-      if (!st) return true;
-      if (st.status === 'auto_evaluated' && st.confidence >= 90 && st.effective_score !== null) {
-        return false; // Auto-evaluated with high confidence
+      if (st && st.status === 'auto_evaluated' && st.confidence >= 90 && st.effective_score !== null) {
+        autoCount++;
+      } else if (st && st.evidence && st.auto_score !== null && st.auto_score !== undefined) {
+        capabilityCount++;
+        pendingList.push(c);
+      } else {
+        pendingList.push(c);
       }
-      return true;
-    });
+    }
+
+    return { autoCount, capabilityCount, pendingList };
+  }
+
+  _getPendingCriteria() {
+    return this._getScanBreakdown().pendingList;
   }
 
   _render() {
@@ -2385,10 +2398,7 @@ class SmartHomeScoreCard extends HTMLElement {
     }
 
     if (this._view === 'discovery') {
-      const states = this._getCriteriaStates();
-      const autoCount = Object.values(states).filter(s => s.status === 'auto_evaluated' && s.confidence >= 90 && s.effective_score !== null).length;
-      const capabilityCount = Object.values(states).filter(s => s.evidence && s.status !== 'auto_evaluated').length;
-      const pendingList = this._getPendingCriteria();
+      const { autoCount, capabilityCount, pendingList } = this._getScanBreakdown();
 
       return `
         <div class="shs-audit-box">

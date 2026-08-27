@@ -1,5 +1,11 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.7] - 2026-08-27
+### Correction Critique de l'Exécution du Scan & Détection Réelle
+- **Exécution Réelle du Moteur de Scan** : Correction du ChangeTracker qui ignorait les critères non confirmés lors des scans successifs.
+- **Propagation Temps Réel vers le Frontend** : Notification immédiate des capteurs et de la carte Lovelace dès la fin de l'analyse automatique.
+- **Bilan Découverte Effectif** : Remplissage instantané des critères auto-évalués et des propositions pré-remplies selon les équipements réels de Home Assistant.
+
 ## [0.7.0-beta.6] - 2026-08-27
 ### Scan Automatique Intelligent & Entretien Ciblé
 - **Scanner Visuel Interactif** : Lancement d'un scan automatique direct des entités, intégrations et sauvegardes dès le début.

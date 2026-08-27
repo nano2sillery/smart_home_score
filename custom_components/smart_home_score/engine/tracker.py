@@ -77,12 +77,24 @@ class ChangeTracker:
                     )
                     flagged_review_ids.append(cid)
                     _LOGGER.info("Criterion %s flagged for review due to structural change", cid)
-            elif current_state.status == CriterionStatus.AUTO_EVALUATED:
-                # Update auto evaluated criteria directly
-                if new_eval.proposed_score is not None:
+            else:
+                # Criterion not confirmed by human: apply scan evaluation
+                is_auto = new_eval.confidence >= 90.0 and new_eval.proposed_score is not None
+                if is_auto:
+                    current_state.status = CriterionStatus.AUTO_EVALUATED
                     current_state.auto_score = new_eval.proposed_score
                     current_state.effective_score = new_eval.proposed_score
-                    current_state.evidence = new_eval.evidence
+                    current_state.evaluation_source = EvaluationSource.AUTO
                     current_state.confidence = new_eval.confidence
+                    current_state.evidence = new_eval.evidence
+                    current_state.applicable = new_eval.applicable
+                else:
+                    current_state.auto_score = new_eval.proposed_score
+                    current_state.confidence = new_eval.confidence
+                    current_state.evidence = new_eval.evidence
+                    current_state.reason_if_not_auto = new_eval.reason_if_not_auto
+                    current_state.applicable = new_eval.applicable
+                    if new_eval.evidence and new_eval.proposed_score is not None:
+                        current_state.status = CriterionStatus.CAPABILITY_EVIDENCE
 
         return current_states, flagged_review_ids
