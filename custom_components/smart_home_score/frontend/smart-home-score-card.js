@@ -1942,15 +1942,19 @@ class SmartHomeScoreCard extends HTMLElement {
   }
 
   _getEntity(suffix) {
-    if (!this._hass?.states) return null;
+    if (!this._hass || !this._hass.states) return null;
     if (this._hass.states['sensor.smart_home_score_' + suffix]) {
       return this._hass.states['sensor.smart_home_score_' + suffix];
     }
     if (this._hass.states['sensor.' + suffix]) {
       return this._hass.states['sensor.' + suffix];
     }
-    const states = Object.values(this._hass.states);
-    return states.find(s => s.entity_id.startsWith('sensor.') && s.entity_id.includes(suffix)) || null;
+    for (const [entityId, stateObj] of Object.entries(this._hass.states)) {
+      if (typeof entityId === 'string' && entityId.startsWith('sensor.') && entityId.includes(suffix)) {
+        return stateObj;
+      }
+    }
+    return null;
   }
 
   _getCriteriaStates() {
@@ -1986,386 +1990,390 @@ class SmartHomeScoreCard extends HTMLElement {
   _render() {
     if (!this.shadowRoot) return;
 
-    const globalScoreSensor = this._getEntity('global_score');
-    const completenessSensor = this._getEntity('completeness');
-    const maturitySensor = this._getEntity('maturity_level');
-    const criticalSensor = this._getEntity('critical_risks');
-    const potentialGainSensor = this._getEntity('potential_gain');
+    try {
+      const globalScoreSensor = this._getEntity('global_score');
+      const completenessSensor = this._getEntity('completeness');
+      const maturitySensor = this._getEntity('maturity_level');
+      const criticalSensor = this._getEntity('critical_risks');
+      const potentialGainSensor = this._getEntity('potential_gain');
 
-    const hasData = globalScoreSensor && globalScoreSensor.state !== 'unknown' && globalScoreSensor.state !== 'unavailable';
-    const scoreVal = hasData ? parseFloat(globalScoreSensor.state) : 0.0;
-    const completenessVal = completenessSensor && completenessSensor.state !== 'unknown' ? parseFloat(completenessSensor.state) : 0.0;
-    const maturityText = maturitySensor?.state && maturitySensor.state !== 'unknown' ? maturitySensor.state : 'Non évalué';
-    const criticalCount = criticalSensor?.state && criticalSensor.state !== 'unknown' ? parseInt(criticalSensor.state, 10) : 0;
-    const potentialGain = potentialGainSensor?.state && potentialGainSensor.state !== 'unknown' ? parseFloat(potentialGainSensor.state) : 0.0;
+      const hasData = globalScoreSensor && globalScoreSensor.state !== 'unknown' && globalScoreSensor.state !== 'unavailable';
+      const scoreVal = hasData ? parseFloat(globalScoreSensor.state) : 0.0;
+      const completenessVal = completenessSensor && completenessSensor.state !== 'unknown' ? parseFloat(completenessSensor.state) : 0.0;
+      const maturityText = maturitySensor?.state && maturitySensor.state !== 'unknown' ? maturitySensor.state : 'Non évalué';
+      const criticalCount = criticalSensor?.state && criticalSensor.state !== 'unknown' ? parseInt(criticalSensor.state, 10) : 0;
+      const potentialGain = potentialGainSensor?.state && potentialGainSensor.state !== 'unknown' ? parseFloat(potentialGainSensor.state) : 0.0;
 
-    const isProvisional = globalScoreSensor?.attributes?.is_provisional ?? (completenessVal < 100);
+      const isProvisional = globalScoreSensor?.attributes?.is_provisional ?? (completenessVal < 100);
 
-    if (completenessVal >= 100 && this._view === 'welcome') {
-      this._view = 'cockpit';
-    }
+      if (completenessVal >= 100 && this._view === 'welcome') {
+        this._view = 'cockpit';
+      }
 
-    this.shadowRoot.innerHTML = `
-      <style>
-        :host {
-          --shs-primary: #3b82f6;
-          --shs-success: #10b981;
-          --shs-warning: #f59e0b;
-          --shs-danger: #ef4444;
-          --shs-bg: var(--ha-card-background, var(--card-background-color, #1e293b));
-          --shs-text: var(--primary-text-color, #f8fafc);
-          --shs-muted: var(--secondary-text-color, #94a3b8);
-          font-family: var(--paper-font-body1_-_font-family, system-ui, -apple-system, sans-serif);
-          display: block;
-        }
-        .shs-container {
-          background: var(--shs-bg);
-          color: var(--shs-text);
-          border-radius: 16px;
-          padding: 20px;
-          box-shadow: var(--ha-card-box-shadow, 0 4px 20px rgba(0,0,0,0.25));
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          box-sizing: border-box;
-        }
-        .shs-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 16px;
-        }
-        .shs-branding {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-size: 1.15rem;
-          font-weight: 700;
-          color: #60a5fa;
-        }
-        .shs-badge-beta {
-          background: rgba(59, 130, 246, 0.18);
-          color: #93c5fd;
-          padding: 3px 8px;
-          border-radius: 9999px;
-          font-size: 0.75rem;
-          font-weight: 600;
-        }
-        .shs-welcome-box {
-          background: rgba(0, 0, 0, 0.2);
-          border: 1px dashed rgba(255, 255, 255, 0.15);
-          border-radius: 12px;
-          padding: 24px;
-          text-align: center;
-          margin: 12px 0;
-        }
-        .shs-welcome-title {
-          font-size: 1.25rem;
-          font-weight: 700;
-          margin-bottom: 8px;
-          color: #f8fafc;
-        }
-        .shs-welcome-desc {
-          color: var(--shs-muted);
-          font-size: 0.92rem;
-          margin-bottom: 20px;
-          line-height: 1.5;
-        }
-        .shs-btn {
-          background: #2563eb;
-          color: white;
-          border: none;
-          padding: 12px 18px;
-          border-radius: 10px;
-          font-size: 0.95rem;
-          font-weight: 600;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          width: 100%;
-          transition: background 0.2s, transform 0.1s;
-          box-sizing: border-box;
-        }
-        .shs-btn:hover {
-          background: #1d4ed8;
-        }
-        .shs-btn:active {
-          transform: scale(0.98);
-        }
-        .shs-btn-sec {
-          background: rgba(255, 255, 255, 0.08);
-          color: var(--shs-text);
-        }
-        .shs-btn-sec:hover {
-          background: rgba(255, 255, 255, 0.15);
-        }
-        .shs-btn-success {
-          background: #059669;
-        }
-        .shs-btn-success:hover {
-          background: #047857;
-        }
-        /* Scanning & Discovery Styles */
-        .shs-scan-box {
-          background: rgba(59, 130, 246, 0.08);
-          border: 1px solid rgba(59, 130, 246, 0.25);
-          border-radius: 12px;
-          padding: 24px;
-          text-align: center;
-          margin: 12px 0;
-        }
-        .shs-spinner {
-          display: inline-block;
-          width: 36px;
-          height: 36px;
-          border: 3px solid rgba(255, 255, 255, 0.15);
-          border-radius: 50%;
-          border-top-color: #60a5fa;
-          animation: spin 1s ease-in-out infinite;
-          margin-bottom: 12px;
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        .shs-discovery-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 8px;
-          margin: 16px 0;
-        }
-        .shs-discovery-item {
-          background: rgba(0, 0, 0, 0.25);
-          border-radius: 8px;
-          padding: 12px 8px;
-          text-align: center;
-        }
-        .shs-discovery-count {
-          font-size: 1.35rem;
-          font-weight: 800;
-          color: #60a5fa;
-        }
-        .shs-discovery-label {
-          font-size: 0.75rem;
-          color: var(--shs-muted);
-          margin-top: 4px;
-          line-height: 1.25;
-        }
-        /* Questionnaire Styles */
-        .shs-audit-box {
-          background: rgba(0, 0, 0, 0.25);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 12px;
-          padding: 18px;
-          margin-bottom: 16px;
-        }
-        .shs-domain-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 10px;
-        }
-        .shs-meta-sub {
-          font-size: 0.78rem;
-          color: #94a3b8;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .shs-question-main {
-          font-size: 1.15rem;
-          font-weight: 700;
-          color: #f8fafc;
-          margin-bottom: 12px;
-          line-height: 1.45;
-        }
-        .shs-evidence-box {
-          background: rgba(59, 130, 246, 0.12);
-          border: 1px solid rgba(59, 130, 246, 0.3);
-          border-radius: 8px;
-          padding: 12px;
-          margin-bottom: 14px;
-        }
-        .shs-evidence-header {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 0.82rem;
-          font-weight: 700;
-          color: #93c5fd;
-          margin-bottom: 4px;
-        }
-        .shs-evidence-text {
-          font-size: 0.85rem;
-          color: #cbd5e1;
-          line-height: 1.35;
-          margin-bottom: 10px;
-        }
-        .shs-why-btn {
-          background: transparent;
-          border: none;
-          color: #60a5fa;
-          font-size: 0.82rem;
-          font-weight: 600;
-          cursor: pointer;
-          padding: 0;
-          margin-bottom: 14px;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-        }
-        .shs-why-content {
-          background: rgba(59, 130, 246, 0.08);
-          border-left: 3px solid #3b82f6;
-          border-radius: 4px;
-          padding: 10px 12px;
-          font-size: 0.85rem;
-          color: #cbd5e1;
-          line-height: 1.45;
-          margin-bottom: 16px;
-        }
-        .shs-answers-grid {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          margin-bottom: 16px;
-        }
-        .shs-ans-btn {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          color: var(--shs-text);
-          padding: 12px 14px;
-          border-radius: 8px;
-          font-size: 0.9rem;
-          font-weight: 500;
-          text-align: left;
-          cursor: pointer;
-          transition: all 0.2s;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          line-height: 1.35;
-        }
-        .shs-ans-btn:hover {
-          background: rgba(59, 130, 246, 0.18);
-          border-color: #3b82f6;
-          color: #93c5fd;
-        }
-        .shs-ans-btn-na {
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px dashed rgba(255, 255, 255, 0.15);
-          color: var(--shs-muted);
-        }
-        .shs-ans-btn-na:hover {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: rgba(255, 255, 255, 0.3);
-          color: var(--shs-text);
-        }
-        .shs-nav-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 10px;
-          margin-top: 14px;
-        }
-        .shs-score-hero {
-          background: rgba(0, 0, 0, 0.25);
-          border-radius: 12px;
-          padding: 16px;
-          margin-bottom: 16px;
-        }
-        .shs-score-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .shs-score-val {
-          font-size: 1.8rem;
-          font-weight: 800;
-          color: #60a5fa;
-        }
-        .shs-provisional-tag {
-          font-size: 0.75rem;
-          background: rgba(245, 158, 11, 0.2);
-          color: #fde68a;
-          padding: 2px 6px;
-          border-radius: 4px;
-          margin-left: 6px;
-          vertical-align: middle;
-        }
-        .shs-progress-bar {
-          background: rgba(255, 255, 255, 0.1);
-          height: 6px;
-          border-radius: 9999px;
-          margin: 10px 0 6px 0;
-          overflow: hidden;
-        }
-        .shs-progress-fill {
-          background: #3b82f6;
-          height: 100%;
-          border-radius: 9999px;
-          transition: width 0.3s ease;
-        }
-        .shs-nav-tabs {
-          display: flex;
-          gap: 6px;
-          margin-bottom: 14px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-          padding-bottom: 8px;
-          overflow-x: auto;
-        }
-        .shs-tab-btn {
-          background: transparent;
-          color: var(--shs-muted);
-          border: none;
-          padding: 6px 12px;
-          border-radius: 8px;
-          font-weight: 600;
-          font-size: 0.82rem;
-          cursor: pointer;
-          transition: all 0.2s;
-          white-space: nowrap;
-        }
-        .shs-tab-btn.active {
-          background: rgba(59, 130, 246, 0.2);
-          color: #60a5fa;
-        }
-        .shs-domain-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 8px;
-          margin-top: 12px;
-        }
-        .shs-domain-card {
-          background: rgba(0, 0, 0, 0.2);
-          border-radius: 8px;
-          padding: 10px;
-          font-size: 0.8rem;
-        }
-        .shs-domain-title {
-          font-weight: 600;
-          color: var(--shs-muted);
-          margin-bottom: 4px;
-        }
-        .shs-domain-score {
-          font-size: 1rem;
-          font-weight: 700;
-          color: #93c5fa;
-        }
-      </style>
+      this.shadowRoot.innerHTML = `
+        <style>
+          :host {
+            --shs-primary: #3b82f6;
+            --shs-success: #10b981;
+            --shs-warning: #f59e0b;
+            --shs-danger: #ef4444;
+            --shs-bg: var(--ha-card-background, var(--card-background-color, #1e293b));
+            --shs-text: var(--primary-text-color, #f8fafc);
+            --shs-muted: var(--secondary-text-color, #94a3b8);
+            font-family: var(--paper-font-body1_-_font-family, system-ui, -apple-system, sans-serif);
+            display: block;
+          }
+          .shs-container {
+            background: var(--shs-bg);
+            color: var(--shs-text);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--ha-card-box-shadow, 0 4px 20px rgba(0,0,0,0.25));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-sizing: border-box;
+          }
+          .shs-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+          }
+          .shs-branding {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #60a5fa;
+          }
+          .shs-badge-beta {
+            background: rgba(59, 130, 246, 0.18);
+            color: #93c5fd;
+            padding: 3px 8px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+          }
+          .shs-welcome-box {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            margin: 12px 0;
+          }
+          .shs-welcome-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #f8fafc;
+          }
+          .shs-welcome-desc {
+            color: var(--shs-muted);
+            font-size: 0.92rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+          }
+          .shs-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            transition: background 0.2s, transform 0.1s;
+            box-sizing: border-box;
+          }
+          .shs-btn:hover {
+            background: #1d4ed8;
+          }
+          .shs-btn:active {
+            transform: scale(0.98);
+          }
+          .shs-btn-sec {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--shs-text);
+          }
+          .shs-btn-sec:hover {
+            background: rgba(255, 255, 255, 0.15);
+          }
+          .shs-btn-success {
+            background: #059669;
+          }
+          .shs-btn-success:hover {
+            background: #047857;
+          }
+          /* Scanning & Discovery Styles */
+          .shs-scan-box {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            margin: 12px 0;
+          }
+          .shs-spinner {
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            border: 3px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            border-top-color: #60a5fa;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 12px;
+          }
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+          .shs-discovery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 16px 0;
+          }
+          .shs-discovery-item {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 8px;
+            padding: 12px 8px;
+            text-align: center;
+          }
+          .shs-discovery-count {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #60a5fa;
+          }
+          .shs-discovery-label {
+            font-size: 0.75rem;
+            color: var(--shs-muted);
+            margin-top: 4px;
+            line-height: 1.25;
+          }
+          /* Questionnaire Styles */
+          .shs-audit-box {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 16px;
+          }
+          .shs-domain-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+          }
+          .shs-meta-sub {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          .shs-question-main {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 12px;
+            line-height: 1.45;
+          }
+          .shs-evidence-box {
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 14px;
+          }
+          .shs-evidence-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #93c5fd;
+            margin-bottom: 4px;
+          }
+          .shs-evidence-text {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            line-height: 1.35;
+            margin-bottom: 10px;
+          }
+          .shs-why-btn {
+            background: transparent;
+            border: none;
+            color: #60a5fa;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+            margin-bottom: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+          }
+          .shs-why-content {
+            background: rgba(59, 130, 246, 0.08);
+            border-left: 3px solid #3b82f6;
+            border-radius: 4px;
+            padding: 10px 12px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            line-height: 1.45;
+            margin-bottom: 16px;
+          }
+          .shs-answers-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+          }
+          .shs-ans-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--shs-text);
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            line-height: 1.35;
+          }
+          .shs-ans-btn:hover {
+            background: rgba(59, 130, 246, 0.18);
+            border-color: #3b82f6;
+            color: #93c5fd;
+          }
+          .shs-ans-btn-na {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            color: var(--shs-muted);
+          }
+          .shs-ans-btn-na:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: var(--shs-text);
+          }
+          .shs-nav-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+          }
+          .shs-score-hero {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+          }
+          .shs-score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .shs-score-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #60a5fa;
+          }
+          .shs-provisional-tag {
+            font-size: 0.75rem;
+            background: rgba(245, 158, 11, 0.2);
+            color: #fde68a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+          }
+          .shs-progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 6px;
+            border-radius: 9999px;
+            margin: 10px 0 6px 0;
+            overflow: hidden;
+          }
+          .shs-progress-fill {
+            background: #3b82f6;
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.3s ease;
+          }
+          .shs-nav-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 8px;
+            overflow-x: auto;
+          }
+          .shs-tab-btn {
+            background: transparent;
+            color: var(--shs-muted);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+          }
+          .shs-tab-btn.active {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+          }
+          .shs-domain-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+          }
+          .shs-domain-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.8rem;
+          }
+          .shs-domain-title {
+            font-weight: 600;
+            color: var(--shs-muted);
+            margin-bottom: 4px;
+          }
+          .shs-domain-score {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #93c5fa;
+          }
+        </style>
 
-      <div class="shs-container">
-        <div class="shs-header">
-          <div class="shs-branding">
-            <span>🏠 Smart Home Score</span>
+        <div class="shs-container">
+          <div class="shs-header">
+            <div class="shs-branding">
+              <span>🏠 Smart Home Score</span>
+            </div>
+            <span class="shs-badge-beta">Bêta v0.7.0-beta.8</span>
           </div>
-          <span class="shs-badge-beta">Bêta v0.7.0-beta.6</span>
+
+          ${this._renderCurrentView(scoreVal, completenessVal, maturityText, criticalCount, potentialGain, isProvisional)}
         </div>
+      `;
 
-        ${this._renderCurrentView(scoreVal, completenessVal, maturityText, criticalCount, potentialGain, isProvisional)}
-      </div>
-    `;
-
-    this._bindEvents();
+      this._bindEvents();
+    } catch (err) {
+      console.error('[SmartHomeScoreCard] Error in render:', err);
+    }
   }
 
   _renderCurrentView(scoreVal, completenessVal, maturityText, criticalCount, potentialGain, isProvisional) {

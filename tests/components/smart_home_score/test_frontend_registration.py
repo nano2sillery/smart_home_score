@@ -24,6 +24,59 @@ class TestFrontendRegistration(unittest.IsolatedAsyncioTestCase):
         res = subprocess.run(["node", "-c", frontend_path], capture_output=True, text=True)
         self.assertEqual(res.returncode, 0, f"JavaScript syntax error in card: {res.stderr}")
 
+    def test_card_lifecycle_and_rendering_in_simulated_browser(self):
+        """Test complete card instantiation, setConfig, set hass, and view transitions in Node."""
+        node_script = """
+const fs = require('fs');
+const jsCode = fs.readFileSync('/Users/LEFRANCC/HomeAssistant/custom_components/smart_home_score/frontend/smart-home-score-card.js', 'utf8');
+
+class HTMLElement {
+  constructor() {
+    this.shadowRoot = {
+      innerHTML: '',
+      getElementById: (id) => ({ addEventListener: (event, fn) => {} }),
+      querySelectorAll: (sel) => []
+    };
+  }
+  attachShadow(opts) { return this.shadowRoot; }
+}
+global.HTMLElement = HTMLElement;
+global.customElements = { get: (name) => null, define: (name, cls) => { global.CustomElementClass = cls; } };
+global.window = { customCards: [] };
+global.console = { info: () => {}, log: () => {}, error: console.error };
+
+eval(jsCode);
+
+if (!global.CustomElementClass) throw new Error('Card class not defined');
+const card = new global.CustomElementClass();
+
+card.setConfig({ type: 'custom:smart-home-score-card' });
+card.hass = { states: {} };
+card.hass = {
+  states: {
+    'sun.sun': { state: 'above_horizon' },
+    'sensor.smart_home_score_global_score': {
+      state: '83.1',
+      attributes: {
+        maturity_level: 'Avancé',
+        is_provisional: false,
+        completeness: 100,
+        critical_count: 0,
+        potential_gain: 16.9,
+        criteria_states: { 'ELEC01': { effective_score: 4, status: 'confirmed', confidence: 100, evidence: 'OK' } }
+      }
+    }
+  }
+};
+
+for (const view of ['welcome', 'scanning', 'discovery', 'audit', 'cockpit']) {
+  card._view = view;
+  card._render();
+}
+"""
+        res = subprocess.run(["node", "-e", node_script], capture_output=True, text=True)
+        self.assertEqual(res.returncode, 0, f"Card lifecycle error in simulated browser: {res.stderr}")
+
     def test_custom_cards_catalog_registration_and_stub_config(self):
         """Test that the JS card defines getStubConfig and registers into window.customCards."""
         frontend_path = "/Users/LEFRANCC/HomeAssistant/custom_components/smart_home_score/frontend/smart-home-score-card.js"

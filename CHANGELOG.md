@@ -1,5 +1,11 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.8] - 2026-08-28
+### Correction Critique 'Erreur de configuration' & Rendu Lovelace Robuste
+- **Résolution 'Erreur de configuration'** : Correction de `_getEntity()` qui levait une exception `TypeError: Cannot read properties of undefined (reading 'startsWith')` sur les dictionnaires d'états non homogènes.
+- **Rendu Résilient** : Encapsulation complète de la fonction de rendu dans un bloc try/catch prévenant tout plantage dans le tableau de bord Lovelace.
+- **Test Automatisé de Cycle de Vie Frontend** : Ajout d'un test complet simulant l'instanciation, le passage de configuration vide, les états hétérogènes et les transitions de vue en environnement navigateur simulé (64 tests au vert).
+
 ## [0.7.0-beta.7] - 2026-08-27
 ### Correction Critique de l'Exécution du Scan & Détection Réelle
 - **Exécution Réelle du Moteur de Scan** : Correction du ChangeTracker qui ignorait les critères non confirmés lors des scans successifs.
