@@ -184,9 +184,9 @@ class SmartHomeScoreCoordinator(DataUpdateCoordinator[AuditResult]):
         await self.async_refresh()
 
     async def async_reset_audit(self) -> None:
-        """Archive completed audit, clear user answers and re-execute clean automatic analysis from scratch."""
+        """Archive completed audit (completeness == 100%), clear user answers and re-execute clean automatic analysis from scratch."""
         current_res = self._calculate_current_result()
-        if current_res.evaluated_count > 0:
+        if current_res.completeness >= 100.0 and not current_res.is_provisional:
             await self.history_mgr.async_record_audit(
                 current_res,
                 note=f"Audit précédent archivé ({current_res.global_score:.1f}/100)",

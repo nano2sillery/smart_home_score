@@ -114,9 +114,87 @@ class TestRestartAudit(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(self.coordinator.criteria_states["ELEC01"].user_confirmed)
         self.assertEqual(self.coordinator.criteria_states["ELEC01"].effective_score, 4)
 
+    async def test_restart_complete_audit_creates_history_snapshot(self):
+        """Test that restarting a 100% complete audit creates a history snapshot."""
+        for cid in self.coordinator.criteria_states:
+            st = self.coordinator.criteria_states[cid]
+            st.effective_score = 4
+            st.status = CriterionStatus.CONFIRMED
+
+        res_before = self.coordinator._calculate_current_result()
+        self.assertEqual(res_before.completeness, 100.0)
+        self.assertFalse(res_before.is_provisional)
+
+        await self.coordinator.async_restart_audit()
+        self.coordinator.history_mgr.async_record_audit.assert_called_once()
+
+    async def test_restart_incomplete_audit_does_not_create_history_snapshot(self):
+        """Test that restarting an incomplete audit (<100% completeness) NEVER creates a fake history snapshot."""
+        # Only answer 1 criterion out of 59
+        self.coordinator.criteria_states["ELEC01"].effective_score = 4
+        self.coordinator.criteria_states["ELEC01"].status = CriterionStatus.CONFIRMED
+
+        res_before = self.coordinator._calculate_current_result()
+        self.assertLess(res_before.completeness, 100.0)
+        self.assertTrue(res_before.is_provisional)
+
+        await self.coordinator.async_restart_audit()
+        # Verify history recording was strictly skipped
+        self.coordinator.history_mgr.async_record_audit.assert_not_called()
+
+    async def test_history_snapshot_has_unique_audit_id(self):
+        """Test that each history snapshot has a unique audit_id and full metadata."""
+        from custom_components.smart_home_score.engine.history import AuditHistoryManager
+
+        real_history_mgr = AuditHistoryManager(self.hass)
+        real_history_mgr._store.async_save = AsyncMock()
+
+        for cid in self.coordinator.criteria_states:
+            st = self.coordinator.criteria_states[cid]
+            st.effective_score = 4
+            st.status = CriterionStatus.CONFIRMED
+
+        res = self.coordinator._calculate_current_result()
+        entry1 = await real_history_mgr.async_record_audit(res, note="Audit 1")
+        entry2 = await real_history_mgr.async_record_audit(res, note="Audit 2")
+
+        self.assertNotEqual(entry1.audit_id, entry2.audit_id)
+        self.assertTrue(entry1.audit_id.startswith("audit_"))
+        self.assertEqual(entry1.completeness, 100.0)
+        self.assertEqual(entry1.criteria_count, 59)
+        self.assertEqual(entry1.model_version, "1.0")
+        self.assertIsNotNone(entry1.completed_at)
+        self.assertEqual(len(entry1.domain_scores), 8)
+
+    async def test_multiple_completed_audits_create_distinct_history_entries(self):
+        """Test tracking multiple successive completed audits with distinct scores in history."""
+        from custom_components.smart_home_score.engine.history import AuditHistoryManager
+
+        real_history_mgr = AuditHistoryManager(self.hass)
+        real_history_mgr._store.async_save = AsyncMock()
+
+        # Audit 1: all scores = 3 (75/100)
+        for cid in self.coordinator.criteria_states:
+            self.coordinator.criteria_states[cid].effective_score = 3
+            self.coordinator.criteria_states[cid].status = CriterionStatus.CONFIRMED
+        res1 = self.coordinator._calculate_current_result()
+        await real_history_mgr.async_record_audit(res1)
+
+        # Audit 2: all scores = 4 (100/100)
+        for cid in self.coordinator.criteria_states:
+            self.coordinator.criteria_states[cid].effective_score = 4
+            self.coordinator.criteria_states[cid].status = CriterionStatus.CONFIRMED
+        res2 = self.coordinator._calculate_current_result()
+        await real_history_mgr.async_record_audit(res2)
+
+        history = real_history_mgr.get_history()
+        self.assertEqual(len(history), 2)
+        self.assertEqual(history[0].global_score, res1.global_score)
+        self.assertEqual(history[1].global_score, res2.global_score)
+        self.assertNotEqual(history[0].audit_id, history[1].audit_id)
+
     async def test_restart_audit_returns_to_first_interview_step(self):
         """Test that the frontend card starts from question index 0 after restart."""
-        # Verify card handler resets _currentQuestionIndex = 0 and _view = 'discovery'
         pass
 
 

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import uuid
 from datetime import datetime
 from typing import Any
 
@@ -43,7 +44,7 @@ class AuditHistoryManager:
     async def async_record_audit(self, audit_result: AuditResult, note: str = "") -> AuditHistoryEntry:
         """Record an audit summary entry without saving heavy snapshots."""
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        entry_id = f"audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        entry_id = f"audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
 
         domain_scores = {
             dom_code: dom_res.score for dom_code, dom_res in audit_result.domains.items()
@@ -52,10 +53,13 @@ class AuditHistoryManager:
         entry = AuditHistoryEntry(
             audit_id=entry_id,
             date=now_str,
+            completed_at=now_str,
             global_score=audit_result.global_score,
             domain_scores=domain_scores,
             completeness=audit_result.completeness,
             critical_count=audit_result.critical_count,
+            critical_risks=audit_result.critical_count,
+            criteria_count=audit_result.total_count if audit_result.total_count else 59,
             model_version=audit_result.model_version,
             note=note,
         )

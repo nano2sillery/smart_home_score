@@ -1,5 +1,11 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.13] - 2026-08-28
+### Protection d'Historique Strict (100% Completeness) & Snapshot Unique
+- **Archivage Conditionné aux Audits Complets** : `restart_audit` n'archive désormais dans l'historique que les audits ayant atteint 100% de complétude (les audits partiels ou interrompus sont ignorés).
+- **Structure de Snapshot d'Historique Enrichie** : Ajout d'un `audit_id` unique par UUID, `completed_at`, `criteria_count` (59), `critical_risks` et `completeness` (100.0).
+- **Couverture de Tests** : 4 nouveaux tests unitaires dédiés à la protection de l'historique (75 tests validés à 100%).
+
 ## [0.7.0-beta.12] - 2026-08-28
 ### Action 'Faire un nouvel audit', Archivage Automatique & Boîte de Confirmation
 - **Action 'Faire un nouvel audit' (`restart_audit`)** : Permet de repartir d'un scan 100% vierge sans réinjecter les anciennes réponses de l'utilisateur.

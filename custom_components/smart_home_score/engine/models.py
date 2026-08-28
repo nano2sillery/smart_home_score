@@ -359,16 +359,33 @@ class AuditHistoryEntry:
     critical_count: int
     model_version: str = "1.0"
     note: str = ""
+    criteria_count: int = 59
+    completed_at: str = ""
+    critical_risks: int = 0
+
+    def __post_init__(self) -> None:
+        """Ensure alias properties are always synchronized."""
+        if not self.completed_at and self.date:
+            self.completed_at = self.date
+        elif not self.date and self.completed_at:
+            self.date = self.completed_at
+        if self.critical_risks == 0 and self.critical_count > 0:
+            self.critical_risks = self.critical_count
+        elif self.critical_count == 0 and self.critical_risks > 0:
+            self.critical_count = self.critical_risks
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for persistence."""
         return {
             "audit_id": self.audit_id,
             "date": self.date,
+            "completed_at": self.completed_at or self.date,
             "global_score": self.global_score,
             "domain_scores": self.domain_scores,
             "completeness": self.completeness,
             "critical_count": self.critical_count,
+            "critical_risks": self.critical_risks or self.critical_count,
+            "criteria_count": self.criteria_count,
             "model_version": self.model_version,
             "note": self.note,
         }
@@ -376,13 +393,18 @@ class AuditHistoryEntry:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> AuditHistoryEntry:
         """Create from dictionary."""
+        date_val = data.get("completed_at") or data.get("date", "")
+        crit_val = int(data.get("critical_risks") or data.get("critical_count", 0))
         return cls(
             audit_id=data.get("audit_id", ""),
-            date=data.get("date", ""),
+            date=date_val,
+            completed_at=date_val,
             global_score=float(data.get("global_score", 0.0)),
             domain_scores=data.get("domain_scores", {}),
             completeness=float(data.get("completeness", 0.0)),
-            critical_count=int(data.get("critical_count", 0)),
+            critical_count=crit_val,
+            critical_risks=crit_val,
+            criteria_count=int(data.get("criteria_count", 59)),
             model_version=str(data.get("model_version", "1.0")),
             note=str(data.get("note", "")),
         )
