@@ -1991,7 +1991,9 @@ class SmartHomeScoreCard extends HTMLElement {
       }
     }
 
-    return { autoCount, capabilityCount, pendingList };
+    const questionOnlyCount = Math.max(0, SHS_CRITERIA.length - autoCount - capabilityCount);
+
+    return { autoCount, capabilityCount, questionOnlyCount, pendingList };
   }
 
   _getPendingCriteria() {
@@ -2414,38 +2416,64 @@ class SmartHomeScoreCard extends HTMLElement {
     }
 
     if (this._view === 'discovery') {
-      const { autoCount, capabilityCount, pendingList } = this._getScanBreakdown();
+      const { autoCount, capabilityCount, questionOnlyCount, pendingList } = this._getScanBreakdown();
+      const globalSensor = this._getGlobalScoreEntity();
+      const stats = globalSensor?.attributes?.installation_stats || {};
+
+      const devCount = stats.devices_count ?? '—';
+      const entCount = stats.entities_count ?? '—';
+      const intCount = stats.integrations_count ?? '—';
+      const autoCountStat = stats.automations_count ?? '—';
+      const scriptCount = stats.scripts_count ?? '—';
+      const areaCount = stats.areas_count ?? '—';
 
       return `
         <div class="shs-audit-box">
-          <div style="text-align:center; margin-bottom:12px;">
+          <div style="text-align:center; margin-bottom:14px;">
             <div style="font-size:1.2rem; font-weight:800; color:#60a5fa;">✨ Scan de votre système terminé !</div>
             <div style="font-size:0.85rem; color:var(--shs-muted); margin-top:4px;">
-              Smart Home Score a analysé votre configuration Home Assistant :
+              Découverte automatique de votre environnement Home Assistant
             </div>
           </div>
 
           <div class="shs-discovery-grid">
-            <div class="shs-discovery-item" style="border:1px solid rgba(16, 185, 129, 0.3);">
+            <div class="shs-discovery-item" style="border-top: 3px solid #10b981; border:1px solid rgba(16, 185, 129, 0.25);">
               <div class="shs-discovery-count" style="color:#34d399;">${autoCount}</div>
-              <div class="shs-discovery-label">Évalués automatiquement</div>
+              <div class="shs-discovery-label">Critères validés automatiquement</div>
             </div>
-            <div class="shs-discovery-item" style="border:1px solid rgba(245, 158, 11, 0.3);">
-              <div class="shs-discovery-count" style="color:#fbbf24;">${capabilityCount}</div>
-              <div class="shs-discovery-label">Pré-remplis avec preuves</div>
+            <div class="shs-discovery-item" style="border-top: 3px solid #3b82f6; border:1px solid rgba(59, 130, 246, 0.25);">
+              <div class="shs-discovery-count" style="color:#60a5fa;">${capabilityCount}</div>
+              <div class="shs-discovery-label">Réponses déjà suggérées</div>
             </div>
-            <div class="shs-discovery-item" style="border:1px solid rgba(59, 130, 246, 0.3);">
-              <div class="shs-discovery-count" style="color:#60a5fa;">${pendingList.length}</div>
-              <div class="shs-discovery-label">Questions ciblées</div>
+            <div class="shs-discovery-item" style="border-top: 3px solid #a855f7; border:1px solid rgba(168, 85, 247, 0.25);">
+              <div class="shs-discovery-count" style="color:#c084fc;">${questionOnlyCount}</div>
+              <div class="shs-discovery-label">Questions sans réponse détectable</div>
             </div>
           </div>
 
-          <div style="font-size:0.85rem; color:#cbd5e1; background:rgba(0,0,0,0.2); padding:10px 14px; border-radius:8px; margin-bottom:16px; line-height:1.4;">
-            💡 <strong>Gain de temps :</strong> Les critères validés par vos intégrations sont déjà comptabilisés. Vous n'avez plus qu'à confirmer les propositions et renseigner vos installations physiques.
+          <div style="font-size:0.78rem; color:var(--shs-muted); text-align:center; margin:-6px 0 14px 0;">
+            59 critères au total · Vous validerez les critères pendant l'entretien.
+          </div>
+
+          <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px 14px; margin-bottom:16px;">
+            <div style="font-size:0.85rem; font-weight:700; color:#93c5fd; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+              🔍 Votre installation analysée
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:6px; font-size:0.8rem; color:#cbd5e1;">
+              <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:6px 8px;">📱 <strong>${devCount}</strong> appareils détectés</div>
+              <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:6px 8px;">⚡ <strong>${entCount}</strong> entités analysées</div>
+              <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:6px 8px;">🔌 <strong>${intCount}</strong> intégrations</div>
+              <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:6px 8px;">⚙️ <strong>${autoCountStat}</strong> automatisations</div>
+              <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:6px 8px;">📜 <strong>${scriptCount}</strong> scripts</div>
+              <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:6px 8px;">🏠 <strong>${areaCount}</strong> zones / pièces</div>
+              ${stats.has_zigbee && stats.zigbee_devices_count ? `<div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:6px 8px;">📡 <strong>${stats.zigbee_devices_count}</strong> appareils Zigbee</div>` : ''}
+              ${stats.has_matter ? `<div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:6px 8px;">🌐 Réseau Matter actif</div>` : ''}
+              ${stats.has_zwave ? `<div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:6px 8px;">📶 Réseau Z-Wave actif</div>` : ''}
+            </div>
           </div>
 
           <button class="shs-btn" id="btn-start-targeted-audit">
-            🚀 Démarrer l'entretien ciblé (${pendingList.length} questions)
+            🚀 Démarrer l'entretien ciblé (${pendingList.length} critères)
           </button>
         </div>
       `;
@@ -2612,12 +2640,86 @@ class SmartHomeScoreCard extends HTMLElement {
     }
 
     if (this._activeTab === 'actions') {
-      return `
-        <div style="font-size:0.85rem; color:var(--shs-muted); line-height:1.4;">
-          <div style="background:rgba(0,0,0,0.2); border-radius:8px; padding:12px; margin-bottom:8px;">
-            <strong style="color:#93c5fd;">🎯 Recommandations ciblées</strong>
-            <p style="margin:4px 0 0 0;">Consultez les suggestions hiérarchisées pour augmenter la fiabilité et l'autonomie de votre logement.</p>
+      const globalSensor = this._getGlobalScoreEntity();
+      const recs = globalSensor?.attributes?.recommendations || [];
+
+      if (!recs || recs.length === 0) {
+        return `
+          <div style="background:rgba(16,185,129,0.12); border-left:3px solid #10b981; border-radius:8px; padding:14px; text-align:center; color:#a7f3d0;">
+            🎉 <strong>Félicitations !</strong> Votre installation a atteint l'excellence maximale (100 / 100). Aucun critère perfectible restant.
           </div>
+        `;
+      }
+
+      // Show top prioritized actions
+      return `
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="font-size:0.82rem; color:var(--shs-muted); display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+            <span><strong>${recs.length}</strong> actions d'amélioration identifiées</span>
+            <span>Triées par pertinence & impact</span>
+          </div>
+
+          ${recs.map((r, idx) => {
+            const prioClass = r.priority === 1 ? 'color:#f87171; background:rgba(239,68,68,0.18);' : (r.priority === 2 ? 'color:#fbbf24; background:rgba(245,158,11,0.18);' : (r.is_quick_win ? 'color:#34d399; background:rgba(16,185,129,0.18);' : 'color:#93c5fd; background:rgba(59,130,246,0.18);'));
+            const effortLabel = r.difficulty === 'FACILE' ? 'Facile · <15 min' : (r.difficulty === 'MOYENNE' ? 'Effort Moyen' : 'Avancé');
+            const targetScore = r.target_score || 4;
+            const curScore = r.current_score || 0;
+            const isExpanded = this._expandedActions && this._expandedActions[r.criterion_id];
+
+            return `
+              <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px;">
+                  <div>
+                    <div style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-transform:uppercase; margin-bottom:2px;">
+                      ${r.criterion_id} · ${r.domain_name}
+                    </div>
+                    <div style="font-weight:700; font-size:0.95rem; color:#f8fafc; line-height:1.3;">
+                      ${r.criterion_name}
+                    </div>
+                  </div>
+                  <div style="background:rgba(16,185,129,0.18); color:#34d399; font-weight:700; font-size:0.82rem; padding:3px 8px; border-radius:6px; white-space:nowrap;">
+                    +${r.exact_gain.toFixed(1)} pt
+                  </div>
+                </div>
+
+                <div style="font-size:0.83rem; color:#cbd5e1; margin-bottom:8px; line-height:1.4;">
+                  <strong>Pourquoi ?</strong> ${r.why_it_matters || r.recommendation_text}
+                </div>
+
+                <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:8px 10px; font-size:0.8rem; margin-bottom:8px;">
+                  <div style="color:#94a3b8; margin-bottom:4px;">
+                    📍 <strong>Situation actuelle :</strong> ${r.current_level_desc || `Niveau ${curScore}/4`}
+                  </div>
+                  <div style="color:#60a5fa; font-weight:600;">
+                    🎯 <strong>Objectif suivant :</strong> ${r.target_level_desc || `Niveau ${targetScore}/4`}
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
+                  <span style="font-size:0.72rem; padding:2px 7px; border-radius:4px; font-weight:700; ${prioClass}">
+                    ${r.priority_label}
+                  </span>
+                  <span style="font-size:0.72rem; padding:2px 7px; border-radius:4px; font-weight:600; background:rgba(255,255,255,0.08); color:#e2e8f0;">
+                    ⏱️ ${effortLabel}
+                  </span>
+                  <span style="font-size:0.72rem; padding:2px 7px; border-radius:4px; font-weight:600; background:rgba(168,85,247,0.18); color:#d8b4fe;">
+                    🏷️ ${r.action_type}
+                  </span>
+                </div>
+
+                <button class="shs-why-btn" data-toggle-action="${r.criterion_id}" style="margin-bottom:0; font-size:0.8rem;">
+                  ${isExpanded ? '▲ Masquer les conseils' : '▼ Voir comment améliorer'}
+                </button>
+
+                ${isExpanded ? `
+                  <div style="background:rgba(59,130,246,0.08); border-left:3px solid #3b82f6; border-radius:4px; padding:10px 12px; font-size:0.83rem; color:#cbd5e1; line-height:1.45; margin-top:8px;">
+                    <strong>💡 Conseil d'amélioration :</strong><br/>
+                    ${r.recommendation_text}
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('')}
         </div>
       `;
     }
@@ -2658,6 +2760,15 @@ class SmartHomeScoreCard extends HTMLElement {
     this.shadowRoot.getElementById('btn-toggle-why')?.addEventListener('click', () => {
       this._showWhy = !this._showWhy;
       this._render();
+    });
+
+    this.shadowRoot.querySelectorAll('[data-toggle-action]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const cid = e.currentTarget.getAttribute('data-toggle-action');
+        this._expandedActions = this._expandedActions || {};
+        this._expandedActions[cid] = !this._expandedActions[cid];
+        this._render();
+      });
     });
 
     this.shadowRoot.querySelectorAll('[data-action]').forEach(btn => {

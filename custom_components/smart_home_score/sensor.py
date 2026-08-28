@@ -57,7 +57,7 @@ SENSOR_DESCRIPTIONS: tuple[SmartHomeScoreSensorEntityDescription, ...] = (
         icon="mdi:shield-star",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda result: result.global_score,
-        extra_attrs_fn=lambda result: {
+        extra_attrs_fn=lambda result, coordinator=None: {
             "maturity_level": result.maturity_level,
             "is_provisional": result.is_provisional,
             "completeness": result.completeness,
@@ -72,6 +72,22 @@ SENSOR_DESCRIPTIONS: tuple[SmartHomeScoreSensorEntityDescription, ...] = (
                 dom_key: dom_res.score
                 for dom_key, dom_res in result.domains.items()
             } if result.domains else {},
+            "installation_stats": {
+                "devices_count": coordinator.last_snapshot.total_devices if (coordinator and coordinator.last_snapshot) else 0,
+                "entities_count": coordinator.last_snapshot.total_entities if (coordinator and coordinator.last_snapshot) else 0,
+                "integrations_count": len(coordinator.last_snapshot.integrations_present) if (coordinator and coordinator.last_snapshot) else 0,
+                "automations_count": coordinator.last_snapshot.automations_count if (coordinator and coordinator.last_snapshot) else 0,
+                "scripts_count": coordinator.last_snapshot.scripts_count if (coordinator and coordinator.last_snapshot) else 0,
+                "areas_count": coordinator.last_snapshot.total_areas if (coordinator and coordinator.last_snapshot) else 0,
+                "zigbee_devices_count": coordinator.last_snapshot.zigbee_devices_count if (coordinator and coordinator.last_snapshot and coordinator.last_snapshot.has_zigbee) else 0,
+                "has_zigbee": coordinator.last_snapshot.has_zigbee if (coordinator and coordinator.last_snapshot) else False,
+                "has_matter": coordinator.last_snapshot.has_matter if (coordinator and coordinator.last_snapshot) else False,
+                "has_zwave": coordinator.last_snapshot.has_zwave if (coordinator and coordinator.last_snapshot) else False,
+            } if (coordinator and coordinator.last_snapshot) else {},
+            "recommendations": [
+                rec.to_dict()
+                for rec in (coordinator.advisor.generate_recommendations(result.criteria_states) if coordinator else [])
+            ] if coordinator else [],
             "criteria_states": {
                 cid: {
                     "effective_score": st.effective_score,
@@ -300,4 +316,8 @@ class SmartHomeScoreSensor(CoordinatorEntity[SmartHomeScoreCoordinator], SensorE
         """Return extra state attributes."""
         if not self.coordinator.data or not self.entity_description.extra_attrs_fn:
             return None
+        import inspect
+        sig = inspect.signature(self.entity_description.extra_attrs_fn)
+        if len(sig.parameters) > 1:
+            return self.entity_description.extra_attrs_fn(self.coordinator.data, self.coordinator)
         return self.entity_description.extra_attrs_fn(self.coordinator.data)

@@ -167,16 +167,18 @@ class SmartHomeAdvisor:
                 continue
 
             target_score = 4
-            next_step_score = current_score + 1
+            next_step_score = min(4, current_score + 1)
 
             # Compute real gain for target 4
             sim_res = self.simulate_improvement(criteria_states, cid, target_score)
-            if sim_res.exact_gain <= 0.0 and current_score > 0:
-                continue
 
             # Recommendation text for the next step
             rec_key = f"{current_score}_to_{next_step_score}"
-            rec_text = c_def.recommendations.get(rec_key, c_def.description)
+            rec_text = c_def.recommendations.get(rec_key, c_def.recommendations.get("0_to_4", c_def.description))
+
+            current_level_desc = c_def.levels.get(str(current_score), f"Niveau {current_score}/4")
+            target_level_desc = c_def.levels.get(str(next_step_score), "Niveau 4/4")
+            why_it_matters = c_def.description
 
             # Metadata from official taxonomy
             meta = CRITERIA_TAXONOMY.get(cid, (DifficultyLevel.MOYENNE, ActionType.CONFIGURATION, [], "FAIBLE"))
@@ -236,6 +238,9 @@ class SmartHomeAdvisor:
                 is_critical=c_def.critical,
                 exact_gain=sim_res.exact_gain,
                 domain_gain=sim_res.domain_gain,
+                current_level_desc=current_level_desc,
+                target_level_desc=target_level_desc,
+                why_it_matters=why_it_matters,
             )
 
             if filter_quick_wins and not is_quick_win:

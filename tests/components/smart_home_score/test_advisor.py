@@ -93,6 +93,40 @@ class TestSmartHomeAdvisor(unittest.TestCase):
         # Verify no state mutation
         self.assertEqual(self.states["CYBER02"].effective_score, initial_cyber02_score)
 
+    def test_actions_tab_not_empty_when_score_below_100(self):
+        """Test that whenever the global score is below 100, recommendations are NEVER empty."""
+        # Scenario: real audit at 92.4 / 100 with 5 criteria not at 4/4
+        self.states["AUTO04"].effective_score = 3
+        self.states["ENER06"].effective_score = 2
+        self.states["MAINT06"].effective_score = 3
+        self.states["CYBER07"].effective_score = 2
+        self.states["RES04"].effective_score = 3
+
+        audit = calculate_audit(self.repo, self.states)
+        self.assertLess(audit.global_score, 100.0)
+        self.assertGreater(audit.potential_gain, 0.0)
+
+        recs = self.advisor.generate_recommendations(self.states)
+        self.assertGreater(len(recs), 0, "Recommendations list must NEVER be empty when score < 100")
+        self.assertEqual(len(recs), 5)
+
+        # Verify exact sum of potential gains matches potential_gain
+        total_rec_gains = sum(r.exact_gain for r in recs)
+        self.assertAlmostEqual(total_rec_gains, audit.potential_gain, delta=0.2)
+
+    def test_action_rich_fields_populated(self):
+        """Test that recommendations populate current_level_desc, target_level_desc and why_it_matters."""
+        self.states["AUTO04"].effective_score = 3
+        recs = self.advisor.generate_recommendations(self.states)
+        rec = next(r for r in recs if r.criterion_id == "AUTO04")
+
+        rec_dict = rec.to_dict()
+        self.assertIn("current_level_desc", rec_dict)
+        self.assertIn("target_level_desc", rec_dict)
+        self.assertIn("why_it_matters", rec_dict)
+        self.assertTrue(len(rec_dict["current_level_desc"]) > 0)
+        self.assertTrue(len(rec_dict["target_level_desc"]) > 0)
+
 
 if __name__ == "__main__":
     unittest.main()

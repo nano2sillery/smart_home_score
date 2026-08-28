@@ -55,12 +55,14 @@ class SmartHomeScoreCoordinator(DataUpdateCoordinator[AuditResult]):
         self.tracker = ChangeTracker(self.rule_engine)
         self.store = SmartHomeScoreStore(hass, model_version=self.model_version)
         self.criteria_states: dict[str, CriterionState] = {}
+        self.last_snapshot: InstallationSnapshot | None = None
         self.last_audit_date: str | None = None
         self.last_analysis_duration_ms: float = 0.0
 
     async def async_init_store(self) -> None:
         """Load stored criteria states and history."""
         await self.history_mgr.async_load()
+        self.last_snapshot = await self.analyzer.async_collect_snapshot()
         stored_states = await self.store.async_load()
         if stored_states:
             self.criteria_states = stored_states
@@ -74,6 +76,7 @@ class SmartHomeScoreCoordinator(DataUpdateCoordinator[AuditResult]):
 
         # 1. Collect non-sensitive snapshot
         snapshot = await self.analyzer.async_collect_snapshot()
+        self.last_snapshot = snapshot
 
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.last_audit_date = now_str

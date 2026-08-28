@@ -273,6 +273,9 @@ class ActionableRecommendation:
     is_critical: bool = False
     exact_gain: float = 0.0         # Calculated precisely using calculator.py!
     domain_gain: float = 0.0        # Gain inside domain
+    current_level_desc: str = ""
+    target_level_desc: str = ""
+    why_it_matters: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
@@ -286,14 +289,17 @@ class ActionableRecommendation:
             "recommendation_text": self.recommendation_text,
             "priority": self.priority,
             "priority_label": self.priority_label,
-            "difficulty": self.difficulty.value,
-            "action_type": self.action_type.value,
-            "action_tags": [t.value for t in self.action_tags],
+            "difficulty": self.difficulty.value if hasattr(self.difficulty, "value") else str(self.difficulty),
+            "action_type": self.action_type.value if hasattr(self.action_type, "value") else str(self.action_type),
+            "action_tags": [t.value if hasattr(t, "value") else str(t) for t in self.action_tags],
             "risk_level": self.risk_level,
             "is_quick_win": self.is_quick_win,
             "is_critical": self.is_critical,
             "exact_gain": self.exact_gain,
             "domain_gain": self.domain_gain,
+            "current_level_desc": self.current_level_desc,
+            "target_level_desc": self.target_level_desc,
+            "why_it_matters": self.why_it_matters,
         }
 
 

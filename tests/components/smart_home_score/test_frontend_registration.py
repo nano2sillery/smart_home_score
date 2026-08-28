@@ -63,6 +63,40 @@ card.hass = {
         completeness: 100,
         critical_count: 0,
         potential_gain: 16.9,
+        installation_stats: {
+          devices_count: 25,
+          entities_count: 120,
+          integrations_count: 8,
+          automations_count: 15,
+          scripts_count: 4,
+          areas_count: 6,
+          zigbee_devices_count: 12,
+          has_zigbee: true
+        },
+        recommendations: [
+          {
+            criterion_id: 'AUTO04',
+            domain: 'AUTO',
+            domain_name: '⚙️ Automatisations',
+            criterion_name: 'Gestion intelligente des volets',
+            current_score: 3,
+            target_score: 4,
+            recommendation_text: 'Ajouter une sonde thermique...',
+            priority: 5,
+            priority_label: 'AMÉLIORATION',
+            difficulty: 'MOYENNE',
+            action_type: 'AUTOMATISATION',
+            action_tags: ['CONFIGURATION'],
+            risk_level: 'FAIBLE',
+            is_quick_win: false,
+            is_critical: false,
+            exact_gain: 0.4,
+            domain_gain: 2.5,
+            current_level_desc: 'Lever/coucher du soleil',
+            target_level_desc: 'Gestion thermique et solaire',
+            why_it_matters: 'Confort et régulation thermique'
+          }
+        ],
         criteria_states: { 'ELEC01': { effective_score: 4, status: 'confirmed', confidence: 100, evidence: 'OK' } }
       }
     }
@@ -72,6 +106,31 @@ card.hass = {
 for (const view of ['welcome', 'scanning', 'discovery', 'audit', 'cockpit']) {
   card._view = view;
   card._render();
+}
+
+// Test actions tab rendering with recommendations
+card._view = 'cockpit';
+card._activeTab = 'actions';
+card._render();
+if (!card.shadowRoot.innerHTML.includes('actions d\\'amélioration')) {
+  throw new Error('Actions tab rendering failed');
+}
+
+// Test domains tab rendering
+card._activeTab = 'domains';
+card._render();
+if (!card.shadowRoot.innerHTML.includes('Sécurité électrique')) {
+  throw new Error('Domains tab rendering failed');
+}
+
+// Test discovery view rendering
+card._view = 'discovery';
+card._render();
+if (!card.shadowRoot.innerHTML.includes('Votre installation analysée')) {
+  throw new Error('Discovery installation stats rendering failed');
+}
+if (!card.shadowRoot.innerHTML.includes('Critères validés automatiquement')) {
+  throw new Error('Discovery 3 counters rendering failed');
 }
 """
         res = subprocess.run(["node", "-e", node_script], capture_output=True, text=True)

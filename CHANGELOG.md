@@ -1,5 +1,12 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.10] - 2026-08-28
+### Onglet Actions Opérationnel, Transparence d'Analyse du Scan & Compteurs Clairs
+- **Onglet Actions & Recommandations Riches** : Génération systématique des fiches d'action pour chaque critère perfectible (< 4/4) avec Situation actuelle, Objectif suivant, Gain potentiel précis (+X pt), Effort (Facile/Moyen/Avancé), Type d'action et conseils d'amélioration officiels du référentiel v1.0.
+- **Transparence d'Analyse Approfondie** : Ajout du bloc « Votre installation analysée » affichant les nombres réels d'appareils, entités, intégrations, automatisations, scripts, zones et protocoles locaux (Zigbee, Matter, Z-Wave).
+- **Compteurs de Découverte Clairs et Explicites** : Remplacement des compteurs ambigus par 3 métriques non équivoques : Critères validés automatiquement / Réponses déjà suggérées / Questions sans réponse détectable (59 critères au total).
+- **Test de Non-Régression** : Couverture automatisée validant que l'onglet Actions n'est jamais vide lorsque le score est inférieur à 100 (66 tests validés à 100%).
+
 ## [0.7.0-beta.9] - 2026-08-28
 ### Détection Universelle de l'Entité Score & Domaines Multilingues
 - **Résolution Multilingue Universelle** : Découverte automatique et indépendante de la langue (français/anglais) de l'entité Score Global via la signature de ses attributs `criteria_states`.
