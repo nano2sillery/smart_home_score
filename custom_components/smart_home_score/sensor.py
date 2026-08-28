@@ -68,6 +68,10 @@ SENSOR_DESCRIPTIONS: tuple[SmartHomeScoreSensorEntityDescription, ...] = (
             "evaluated_count": result.evaluated_count,
             "applicable_count": result.applicable_count,
             "total_count": result.total_count,
+            "domain_scores": {
+                dom_key: dom_res.score
+                for dom_key, dom_res in result.domains.items()
+            } if result.domains else {},
             "criteria_states": {
                 cid: {
                     "effective_score": st.effective_score,

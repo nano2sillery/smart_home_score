@@ -1,5 +1,11 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.9] - 2026-08-28
+### Détection Universelle de l'Entité Score & Domaines Multilingues
+- **Résolution Multilingue Universelle** : Découverte automatique et indépendante de la langue (français/anglais) de l'entité Score Global via la signature de ses attributs `criteria_states`.
+- **Exposition Directe des Scores de Domaines** : Intégration de l'attribut `domain_scores` sur le capteur global pour un affichage immédiat sans dépendre du nommage des entités individuelles.
+- **Affichage Découverte Automatique Garanti** : Le bilan de scan (critères auto-évalués et pré-remplis) s'affiche désormais avec 100% de fiabilité sur toute instance Home Assistant.
+
 ## [0.7.0-beta.8] - 2026-08-28
 ### Correction Critique 'Erreur de configuration' & Rendu Lovelace Robuste
 - **Résolution 'Erreur de configuration'** : Correction de `_getEntity()` qui levait une exception `TypeError: Cannot read properties of undefined (reading 'startsWith')` sur les dictionnaires d'états non homogènes.

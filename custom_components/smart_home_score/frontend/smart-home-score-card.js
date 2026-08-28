@@ -1,12 +1,12 @@
 /**
- * Smart Home Score Lovelace Custom Card (v0.7.0-beta.6)
+ * Smart Home Score Lovelace Custom Card (v0.7.0-beta.9)
  * Author: Cyrille LEFRANC
  * 100% Local Lovelace Card for Home Assistant.
  * Intelligent Automated System Scanner, Assisted Pre-filled Proposals, Live Scoring & Human Audit.
  */
 
 console.info(
-  '%c SMART-HOME-SCORE %c v0.7.0-beta.6 ',
+  '%c SMART-HOME-SCORE %c v0.7.0-beta.9 ',
   'color: white; background: #3b82f6; font-weight: 700; border-radius: 3px 0 0 3px;',
   'color: #3b82f6; background: #1e293b; font-weight: 700; border-radius: 0 3px 3px 0;'
 );
@@ -1941,16 +1941,27 @@ class SmartHomeScoreCard extends HTMLElement {
     return 7;
   }
 
-  _getEntity(suffix) {
+  _getGlobalScoreEntity() {
     if (!this._hass || !this._hass.states) return null;
-    if (this._hass.states['sensor.smart_home_score_' + suffix]) {
-      return this._hass.states['sensor.smart_home_score_' + suffix];
-    }
-    if (this._hass.states['sensor.' + suffix]) {
-      return this._hass.states['sensor.' + suffix];
-    }
+    // 1. Attribute signature match (100% language agnostic)
     for (const [entityId, stateObj] of Object.entries(this._hass.states)) {
-      if (typeof entityId === 'string' && entityId.startsWith('sensor.') && entityId.includes(suffix)) {
+      if (stateObj && stateObj.attributes && (stateObj.attributes.criteria_states || stateObj.attributes.maturity_level !== undefined)) {
+        return stateObj;
+      }
+    }
+    // 2. Direct names
+    const candidates = [
+      'sensor.smart_home_score_global_score',
+      'sensor.smart_home_score_score_global',
+      'sensor.global_score',
+      'sensor.score_global'
+    ];
+    for (const cand of candidates) {
+      if (this._hass.states[cand]) return this._hass.states[cand];
+    }
+    // 3. Substring match
+    for (const [entityId, stateObj] of Object.entries(this._hass.states)) {
+      if (typeof entityId === 'string' && (entityId.includes('smart_home_score') || entityId.includes('score_global') || entityId.includes('global_score'))) {
         return stateObj;
       }
     }
@@ -1958,8 +1969,8 @@ class SmartHomeScoreCard extends HTMLElement {
   }
 
   _getCriteriaStates() {
-    const globalScoreSensor = this._getEntity('global_score');
-    return globalScoreSensor?.attributes?.criteria_states || {};
+    const globalSensor = this._getGlobalScoreEntity();
+    return (globalSensor && globalSensor.attributes && globalSensor.attributes.criteria_states) ? globalSensor.attributes.criteria_states : {};
   }
 
   _getScanBreakdown() {
@@ -1991,20 +2002,17 @@ class SmartHomeScoreCard extends HTMLElement {
     if (!this.shadowRoot) return;
 
     try {
-      const globalScoreSensor = this._getEntity('global_score');
-      const completenessSensor = this._getEntity('completeness');
-      const maturitySensor = this._getEntity('maturity_level');
-      const criticalSensor = this._getEntity('critical_risks');
-      const potentialGainSensor = this._getEntity('potential_gain');
+      const globalScoreSensor = this._getGlobalScoreEntity();
+      const attrs = globalScoreSensor?.attributes || {};
 
       const hasData = globalScoreSensor && globalScoreSensor.state !== 'unknown' && globalScoreSensor.state !== 'unavailable';
       const scoreVal = hasData ? parseFloat(globalScoreSensor.state) : 0.0;
-      const completenessVal = completenessSensor && completenessSensor.state !== 'unknown' ? parseFloat(completenessSensor.state) : 0.0;
-      const maturityText = maturitySensor?.state && maturitySensor.state !== 'unknown' ? maturitySensor.state : 'Non évalué';
-      const criticalCount = criticalSensor?.state && criticalSensor.state !== 'unknown' ? parseInt(criticalSensor.state, 10) : 0;
-      const potentialGain = potentialGainSensor?.state && potentialGainSensor.state !== 'unknown' ? parseFloat(potentialGainSensor.state) : 0.0;
+      const completenessVal = attrs.completeness !== undefined ? parseFloat(attrs.completeness) : (hasData ? 100.0 : 0.0);
+      const maturityText = attrs.maturity_level || 'Non évalué';
+      const criticalCount = attrs.critical_count !== undefined ? parseInt(attrs.critical_count, 10) : 0;
+      const potentialGain = attrs.potential_gain !== undefined ? parseFloat(attrs.potential_gain) : 0.0;
 
-      const isProvisional = globalScoreSensor?.attributes?.is_provisional ?? (completenessVal < 100);
+      const isProvisional = attrs.is_provisional ?? (completenessVal < 100);
 
       if (completenessVal >= 100 && this._view === 'welcome') {
         this._view = 'cockpit';
@@ -2363,7 +2371,7 @@ class SmartHomeScoreCard extends HTMLElement {
             <div class="shs-branding">
               <span>🏠 Smart Home Score</span>
             </div>
-            <span class="shs-badge-beta">Bêta v0.7.0-beta.8</span>
+            <span class="shs-badge-beta">Bêta v0.7.0-beta.9</span>
           </div>
 
           ${this._renderCurrentView(scoreVal, completenessVal, maturityText, criticalCount, potentialGain, isProvisional)}
@@ -2581,17 +2589,24 @@ class SmartHomeScoreCard extends HTMLElement {
 
   _renderTabBody(isProvisional) {
     if (this._activeTab === 'domains') {
-      const getDom = (key) => this._getEntity(key)?.state ?? '—';
+      const globalSensor = this._getGlobalScoreEntity();
+      const domScores = globalSensor?.attributes?.domain_scores || {};
+      const getDom = (domCode) => {
+        if (domScores[domCode] !== undefined && domScores[domCode] !== null) {
+          return Number(domScores[domCode]).toFixed(1);
+        }
+        return '—';
+      };
       return `
         <div class="shs-domain-grid">
-          <div class="shs-domain-card"><div class="shs-domain-title">⚡ Sécurité électrique</div><div class="shs-domain-score">${getDom('elec_score')} / 100</div></div>
-          <div class="shs-domain-card"><div class="shs-domain-title">🔒 Cybersécurité</div><div class="shs-domain-score">${getDom('cyber_score')} / 100</div></div>
-          <div class="shs-domain-card"><div class="shs-domain-title">🛡️ Résilience</div><div class="shs-domain-score">${getDom('res_score')} / 100</div></div>
-          <div class="shs-domain-card"><div class="shs-domain-title">⚙️ Automatisations</div><div class="shs-domain-score">${getDom('auto_score')} / 100</div></div>
-          <div class="shs-domain-card"><div class="shs-domain-title">☀️ Énergie</div><div class="shs-domain-score">${getDom('ener_score')} / 100</div></div>
-          <div class="shs-domain-card"><div class="shs-domain-title">🔌 Interopérabilité</div><div class="shs-domain-score">${getDom('inter_score')} / 100</div></div>
-          <div class="shs-domain-card"><div class="shs-domain-title">📱 Expérience / UX</div><div class="shs-domain-score">${getDom('ux_score')} / 100</div></div>
-          <div class="shs-domain-card"><div class="shs-domain-title">🛠️ Maintenance</div><div class="shs-domain-score">${getDom('maint_score')} / 100</div></div>
+          <div class="shs-domain-card"><div class="shs-domain-title">⚡ Sécurité électrique</div><div class="shs-domain-score">${getDom('ELEC')} / 100</div></div>
+          <div class="shs-domain-card"><div class="shs-domain-title">🔒 Cybersécurité</div><div class="shs-domain-score">${getDom('CYBER')} / 100</div></div>
+          <div class="shs-domain-card"><div class="shs-domain-title">🛡️ Résilience</div><div class="shs-domain-score">${getDom('RES')} / 100</div></div>
+          <div class="shs-domain-card"><div class="shs-domain-title">⚙️ Automatisations</div><div class="shs-domain-score">${getDom('AUTO')} / 100</div></div>
+          <div class="shs-domain-card"><div class="shs-domain-title">☀️ Énergie</div><div class="shs-domain-score">${getDom('ENER')} / 100</div></div>
+          <div class="shs-domain-card"><div class="shs-domain-title">🔌 Interopérabilité</div><div class="shs-domain-score">${getDom('INTER')} / 100</div></div>
+          <div class="shs-domain-card"><div class="shs-domain-title">📱 Expérience / UX</div><div class="shs-domain-score">${getDom('UX')} / 100</div></div>
+          <div class="shs-domain-card"><div class="shs-domain-title">🛠️ Maintenance</div><div class="shs-domain-score">${getDom('MAINT')} / 100</div></div>
         </div>
       `;
     }
