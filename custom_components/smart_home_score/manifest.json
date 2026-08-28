@@ -1,7 +1,7 @@
 {
   "domain": "smart_home_score",
   "name": "Smart Home Score",
-  "version": "0.7.0-beta.15",
+  "version": "0.7.0-beta.16",
   "documentation": "https://github.com/nano2sillery/smart_home_score",
   "issue_tracker": "https://github.com/nano2sillery/smart_home_score/issues",
   "dependencies": [

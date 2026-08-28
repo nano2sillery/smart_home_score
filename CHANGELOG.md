@@ -1,5 +1,14 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.16] - 2026-08-28
+### Stabilisation Bêta Externe, Robustesse & Téléchargement Diagnostics
+- **Feature Freeze & Stabilisation Bêta** : Préparation au déploiement pour bêta-testeurs externes.
+- **Téléchargement des Diagnostics Intégré** : Accès direct en un clic depuis le Cockpit (`📥 Télécharger les diagnostics`) pour exporter un rapport JSON anonymisé et exempt de données personnelles/secrets.
+- **Résilience aux Erreurs & Sécurité des Données** : Protection contre les pannes temporaires de scan et pannes de stockage disque (continuation en mémoire sans crash).
+- **Performance Validée sur Grosses Instances** : Testé sur 5 000 entités, 500 appareils et 300 automatisations (< 150 ms d'exécution totale).
+- **Confidentialité 100% Locale** : Zéro appel externe, anonymisation stricte des IP, adresses MAC, emails et chemins locaux.
+- **Suite de 95 Tests Automatisés Validée** (100% de succès).
+
 ## [0.7.0-beta.15] - 2026-08-28
 ### Nouvel Onglet 📈 Évolution & Suivi de Progression Temporelle
 - **Onglet 📈 Évolution Dédié** : Visualisation claire de la trajectoire de maturité de la maison (`83,1 → 92,4 → 94,8`).

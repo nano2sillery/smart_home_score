@@ -26,20 +26,23 @@ class SmartHomeScoreStore:
         self._data: dict[str, Any] = {}
 
     async def async_load(self) -> dict[str, CriterionState]:
-        """Load stored criteria states."""
-        stored = await self._store.async_load()
-        if not stored:
-            _LOGGER.debug("No existing Smart Home Score store found, starting fresh")
+        """Load stored criteria states safely."""
+        try:
+            stored = await self._store.async_load()
+            if not stored:
+                _LOGGER.debug("No existing Smart Home Score store found, starting fresh")
+                return {}
+
+            self._data = stored
+            criteria_raw = stored.get("criteria", {})
+            states: dict[str, CriterionState] = {}
+            for cid, c_dict in criteria_raw.items():
+                states[cid] = CriterionState.from_dict(c_dict)
+
+            return states
+        except Exception as err:
+            _LOGGER.error("Error loading Smart Home Score persistent store, starting with safe defaults: %s", err)
             return {}
-
-        self._data = stored
-        # Handle migrations if STORAGE_VERSION changes in future
-        criteria_raw = stored.get("criteria", {})
-        states: dict[str, CriterionState] = {}
-        for cid, c_dict in criteria_raw.items():
-            states[cid] = CriterionState.from_dict(c_dict)
-
-        return states
 
     async def async_save(
         self,
@@ -47,17 +50,20 @@ class SmartHomeScoreStore:
         last_audit_date: str | None = None,
         history_snapshot: dict[str, Any] | None = None,
     ) -> None:
-        """Save criteria states and audit history."""
-        criteria_dict = {cid: state.to_dict() for cid, state in criteria_states.items()}
-        history = self._data.get("history", [])
-        if history_snapshot:
-            history.append(history_snapshot)
+        """Save criteria states and audit history safely."""
+        try:
+            criteria_dict = {cid: state.to_dict() for cid, state in criteria_states.items()}
+            history = self._data.get("history", [])
+            if history_snapshot:
+                history.append(history_snapshot)
 
-        self._data = {
-            "schema_version": STORAGE_VERSION,
-            "model_version": self.model_version,
-            "last_audit_date": last_audit_date,
-            "criteria": criteria_dict,
-            "history": history,
-        }
-        await self._store.async_save(self._data)
+            self._data = {
+                "schema_version": STORAGE_VERSION,
+                "model_version": self.model_version,
+                "last_audit_date": last_audit_date,
+                "criteria": criteria_dict,
+                "history": history,
+            }
+            await self._store.async_save(self._data)
+        except Exception as err:
+            _LOGGER.warning("Could not persist Smart Home Score data to store (will continue in-memory): %s", err)

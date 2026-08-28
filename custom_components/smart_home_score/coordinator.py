@@ -74,43 +74,46 @@ class SmartHomeScoreCoordinator(DataUpdateCoordinator[AuditResult]):
     async def async_run_analysis(self, save_on_complete: bool = True) -> AuditResult:
         """Execute on-demand local environment analysis with change tracking."""
         start_time = time.perf_counter()
-        _LOGGER.info("Starting Smart Home Score automated analysis (v0.5.0)...")
+        _LOGGER.info("Starting Smart Home Score automated analysis...")
 
-        # 1. Collect non-sensitive snapshot
-        snapshot = await self.analyzer.async_collect_snapshot()
-        self.last_snapshot = snapshot
+        try:
+            # 1. Collect non-sensitive snapshot
+            snapshot = await self.analyzer.async_collect_snapshot()
+            self.last_snapshot = snapshot
 
-        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.last_audit_date = now_str
+            now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.last_audit_date = now_str
 
-        # 2. If existing states exist, run change tracker to detect drift without overwriting
-        if self.criteria_states:
-            self.criteria_states, flagged_ids = self.tracker.detect_changes_and_update(
-                self.criteria_states, snapshot
-            )
-            if flagged_ids:
-                _LOGGER.info("Identified %d criteria requiring review after environment changes", len(flagged_ids))
-        else:
-            # First initialization
-            evaluations = self.rule_engine.evaluate_all(snapshot)
-            for cid, eval_res in evaluations.items():
-                is_auto = eval_res.confidence >= CONFIDENCE_AUTO_THRESHOLD and eval_res.proposed_score is not None
-                status = CriterionStatus.AUTO_EVALUATED if is_auto else eval_res.status
-                self.criteria_states[cid] = CriterionState(
-                    criterion_id=cid,
-                    status=status,
-                    auto_score=eval_res.proposed_score,
-                    effective_score=eval_res.proposed_score if is_auto else None,
-                    evaluation_source=EvaluationSource.AUTO if is_auto else EvaluationSource.MANUAL,
-                    confidence=eval_res.confidence,
-                    user_confirmed=False,
-                    needs_review=False,
-                    evidence=eval_res.evidence,
-                    evidence_type=eval_res.evidence_type,
-                    last_evaluated=now_str,
-                    applicable=eval_res.applicable,
-                    reason_if_not_auto=eval_res.reason_if_not_auto,
+            # 2. If existing states exist, run change tracker to detect drift without overwriting
+            if self.criteria_states:
+                self.criteria_states, flagged_ids = self.tracker.detect_changes_and_update(
+                    self.criteria_states, snapshot
                 )
+                if flagged_ids:
+                    _LOGGER.info("Identified %d criteria requiring review after environment changes", len(flagged_ids))
+            else:
+                # First initialization
+                evaluations = self.rule_engine.evaluate_all(snapshot)
+                for cid, eval_res in evaluations.items():
+                    is_auto = eval_res.confidence >= CONFIDENCE_AUTO_THRESHOLD and eval_res.proposed_score is not None
+                    status = CriterionStatus.AUTO_EVALUATED if is_auto else eval_res.status
+                    self.criteria_states[cid] = CriterionState(
+                        criterion_id=cid,
+                        status=status,
+                        auto_score=eval_res.proposed_score,
+                        effective_score=eval_res.proposed_score if is_auto else None,
+                        evaluation_source=EvaluationSource.AUTO if is_auto else EvaluationSource.MANUAL,
+                        confidence=eval_res.confidence,
+                        user_confirmed=False,
+                        needs_review=False,
+                        evidence=eval_res.evidence,
+                        evidence_type=eval_res.evidence_type,
+                        last_evaluated=now_str,
+                        applicable=eval_res.applicable,
+                        reason_if_not_auto=eval_res.reason_if_not_auto,
+                    )
+        except Exception as err:
+            _LOGGER.error("Error during Smart Home Score automated scan (retaining current state): %s", err, exc_info=True)
 
         elapsed_ms = (time.perf_counter() - start_time) * 1000.0
         self.last_analysis_duration_ms = elapsed_ms

@@ -1,12 +1,12 @@
 /**
- * Smart Home Score Lovelace Custom Card (v0.7.0-beta.15)
+ * Smart Home Score Lovelace Custom Card (v0.7.0-beta.16)
  * Author: Cyrille LEFRANC
  * 100% Local Lovelace Card for Home Assistant.
  * Intelligent Automated System Scanner, Assisted Pre-filled Proposals, Live Scoring & Human Audit.
  */
 
 console.info(
-  '%c SMART-HOME-SCORE %c v0.7.0-beta.15 ',
+  '%c SMART-HOME-SCORE %c v0.7.0-beta.16 ',
   'color: white; background: #3b82f6; font-weight: 700; border-radius: 3px 0 0 3px;',
   'color: #3b82f6; background: #1e293b; font-weight: 700; border-radius: 0 3px 3px 0;'
 );
@@ -2373,7 +2373,7 @@ class SmartHomeScoreCard extends HTMLElement {
             <div class="shs-branding">
               <span>🏠 Smart Home Score</span>
             </div>
-            <span class="shs-badge-beta">Bêta v0.7.0-beta.15</span>
+            <span class="shs-badge-beta">Bêta v0.7.0-beta.16</span>
           </div>
 
           ${this._renderCurrentView(scoreVal, completenessVal, maturityText, criticalCount, potentialGain, isProvisional)}
@@ -2631,9 +2631,55 @@ class SmartHomeScoreCard extends HTMLElement {
           Faire un nouvel audit (recommencer depuis zéro)
         </button>
       </div>
+
+      <div style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:var(--shs-muted);">
+        <div>
+          <span>Smart Home Score <strong>v0.7.0-beta.16</strong></span> • <span>Modèle <strong>v1.0</strong></span>
+        </div>
+        <div>
+          <button id="btn-download-diag" style="background:transparent; border:none; color:#38bdf8; font-size:0.72rem; text-decoration:underline; cursor:pointer; padding:2px 4px;">
+            📥 Télécharger les diagnostics
+          </button>
+        </div>
+      </div>
     `;
   }
 
+
+
+  _downloadDiagnostics() {
+    const globalSensor = this._getGlobalScoreEntity();
+    const attrs = globalSensor?.attributes || {};
+    const diagData = {
+      integration_version: "0.7.0-beta.16",
+      is_beta: true,
+      model_version: "1.0",
+      author: "Cyrille LEFRANC",
+      exported_at: new Date().toISOString(),
+      installation_stats: attrs.installation_stats || {},
+      audit_summary: {
+        global_score: globalSensor ? Number(globalSensor.state) : 0,
+        completeness: attrs.completeness || 0,
+        maturity_level: attrs.maturity_level || "Non évalué",
+        is_provisional: attrs.is_provisional !== undefined ? attrs.is_provisional : true,
+        critical_count: attrs.critical_count || 0,
+        potential_gain: attrs.potential_gain || 0,
+      },
+      domain_scores: attrs.domain_scores || {},
+      evolution_summary: attrs.evolution || {},
+      criteria_states: attrs.criteria_states || {},
+    };
+
+    const blob = new Blob([JSON.stringify(diagData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `smart_home_score_diagnostics_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 
   _renderHistoryList(entries) {
     if (!this._expandedAudits) {
