@@ -123,6 +123,14 @@ if (!card.shadowRoot.innerHTML.includes('Sécurité électrique')) {
   throw new Error('Domains tab rendering failed');
 }
 
+// Test evolution tab rendering
+card._view = 'cockpit';
+card._activeTab = 'evolution';
+card._render();
+if (!card.shadowRoot.innerHTML.includes('Historique d\\'évolution') && !card.shadowRoot.innerHTML.includes('Évolution du Smart Home Score')) {
+  throw new Error('Evolution tab rendering failed');
+}
+
 // Test discovery view rendering
 card._view = 'discovery';
 card._render();

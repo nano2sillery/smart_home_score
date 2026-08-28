@@ -105,9 +105,51 @@ class AuditHistoryManager:
                 history_entries=[],
             )
 
-        first_score = entries[0].global_score
-        latest_score = entries[-1].global_score
+        first = entries[0]
+        latest = entries[-1]
+        first_score = first.global_score
+        latest_score = latest.global_score
         progression = round(latest_score - first_score, 1)
+
+        domain_names = {
+            "ELEC": "⚡ Sécurité électrique",
+            "CYBER": "🔒 Cybersécurité",
+            "RES": "🛡️ Résilience",
+            "AUTO": "⚙️ Automatisations",
+            "ENER": "☀️ Énergie",
+            "INTER": "🔌 Interopérabilité",
+            "UX": "📱 Expérience / UX",
+            "MAINT": "🛠️ Maintenance",
+        }
+
+        domain_progressions: dict[str, dict[str, Any]] = {}
+        all_dom_deltas: list[dict[str, Any]] = []
+
+        for dom_code, dom_name in domain_names.items():
+            f_val = first.domain_scores.get(dom_code, 0.0)
+            l_val = latest.domain_scores.get(dom_code, 0.0)
+            d_val = round(l_val - f_val, 1)
+            domain_progressions[dom_code] = {
+                "name": dom_name,
+                "first": f_val,
+                "latest": l_val,
+                "delta": d_val,
+                "is_positive": d_val > 0,
+                "is_neutral": d_val == 0,
+            }
+            if d_val > 0:
+                all_dom_deltas.append({
+                    "domain_code": dom_code,
+                    "domain_name": dom_name,
+                    "delta": d_val,
+                })
+
+        # Top 3 progressions sorted descending
+        all_dom_deltas.sort(key=lambda x: x["delta"], reverse=True)
+        top_progressions = all_dom_deltas[:3]
+
+        all_models = {e.model_version for e in self.history_entries}
+        has_mismatch = len(all_models) > 1
 
         return EvolutionSummary(
             total_audits=len(entries),
@@ -115,4 +157,9 @@ class AuditHistoryManager:
             latest_audit_score=latest_score,
             total_progression=progression,
             history_entries=entries,
+            first_completed_at=first.completed_at or first.date,
+            latest_completed_at=latest.completed_at or latest.date,
+            domain_progressions=domain_progressions,
+            top_progressions=top_progressions,
+            has_model_version_mismatch=has_mismatch,
         )

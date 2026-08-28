@@ -419,6 +419,26 @@ class EvolutionSummary:
     latest_audit_score: float
     total_progression: float
     history_entries: list[AuditHistoryEntry]
+    first_completed_at: str = ""
+    latest_completed_at: str = ""
+    domain_progressions: dict[str, dict[str, Any]] = field(default_factory=dict)
+    top_progressions: list[dict[str, Any]] = field(default_factory=list)
+    has_model_version_mismatch: bool = False
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary."""
+        return {
+            "total_audits": self.total_audits,
+            "first_audit_score": self.first_audit_score,
+            "latest_audit_score": self.latest_audit_score,
+            "total_progression": self.total_progression,
+            "first_completed_at": self.first_completed_at,
+            "latest_completed_at": self.latest_completed_at,
+            "domain_progressions": self.domain_progressions,
+            "top_progressions": self.top_progressions,
+            "has_model_version_mismatch": self.has_model_version_mismatch,
+            "history_entries": [e.to_dict() for e in self.history_entries],
+        }
 
 
 @dataclass

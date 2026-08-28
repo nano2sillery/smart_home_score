@@ -88,6 +88,11 @@ SENSOR_DESCRIPTIONS: tuple[SmartHomeScoreSensorEntityDescription, ...] = (
                 rec.to_dict()
                 for rec in (coordinator.advisor.generate_recommendations(result.criteria_states) if coordinator else [])
             ] if coordinator else [],
+            "evolution": (
+                coordinator.history_mgr.get_evolution_summary().to_dict()
+                if (coordinator and coordinator.history_mgr)
+                else {}
+            ),
             "criteria_states": {
                 cid: {
                     "effective_score": st.effective_score,

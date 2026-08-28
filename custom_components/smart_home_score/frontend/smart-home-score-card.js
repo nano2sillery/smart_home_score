@@ -1,12 +1,12 @@
 /**
- * Smart Home Score Lovelace Custom Card (v0.7.0-beta.11)
+ * Smart Home Score Lovelace Custom Card (v0.7.0-beta.15)
  * Author: Cyrille LEFRANC
  * 100% Local Lovelace Card for Home Assistant.
  * Intelligent Automated System Scanner, Assisted Pre-filled Proposals, Live Scoring & Human Audit.
  */
 
 console.info(
-  '%c SMART-HOME-SCORE %c v0.7.0-beta.11 ',
+  '%c SMART-HOME-SCORE %c v0.7.0-beta.15 ',
   'color: white; background: #3b82f6; font-weight: 700; border-radius: 3px 0 0 3px;',
   'color: #3b82f6; background: #1e293b; font-weight: 700; border-radius: 0 3px 3px 0;'
 );
@@ -2373,7 +2373,7 @@ class SmartHomeScoreCard extends HTMLElement {
             <div class="shs-branding">
               <span>🏠 Smart Home Score</span>
             </div>
-            <span class="shs-badge-beta">Bêta v0.7.0-beta.11</span>
+            <span class="shs-badge-beta">Bêta v0.7.0-beta.15</span>
           </div>
 
           ${this._renderCurrentView(scoreVal, completenessVal, maturityText, criticalCount, potentialGain, isProvisional)}
@@ -2610,6 +2610,7 @@ class SmartHomeScoreCard extends HTMLElement {
         <button class="shs-tab-btn ${this._activeTab === 'overview' ? 'active' : ''}" id="tab-overview">📊 Synthèse</button>
         <button class="shs-tab-btn ${this._activeTab === 'domains' ? 'active' : ''}" id="tab-domains">🏛️ Domaines</button>
         <button class="shs-tab-btn ${this._activeTab === 'actions' ? 'active' : ''}" id="tab-actions">⚡ Actions</button>
+        <button class="shs-tab-btn ${this._activeTab === 'evolution' ? 'active' : ''}" id="tab-evolution">📈 Évolution</button>
       </div>
 
       <div id="shs-tab-body">
@@ -2633,7 +2634,189 @@ class SmartHomeScoreCard extends HTMLElement {
     `;
   }
 
+
+  _renderHistoryList(entries) {
+    if (!this._expandedAudits) {
+      this._expandedAudits = {};
+    }
+    return `
+      <div style="background:var(--shs-card-bg); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px;">
+        <div style="font-size:0.8rem; font-weight:700; color:#cbd5e1; margin-bottom:8px;">📜 Historique chronologique (${entries.length} audit${entries.length > 1 ? 's' : ''})</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          ${entries.slice().reverse().map((e, idx) => {
+            const isExp = !!this._expandedAudits[e.audit_id];
+            return `
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <span style="font-weight:700; font-size:0.85rem; color:#f8fafc;">${e.completed_at || e.date}</span>
+                    <div style="font-size:0.75rem; color:var(--shs-muted); margin-top:2px;">
+                      Risques critiques : <strong>${e.critical_count || e.critical_risks || 0}</strong> • Modèle : <strong>v${e.model_version || '1.0'}</strong>
+                    </div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-size:1.1rem; font-weight:800; color:#38bdf8;">${e.global_score.toFixed(1)} <span style="font-size:0.75rem; color:var(--shs-muted);">/100</span></div>
+                    <button class="shs-why-btn" data-toggle-audit="${e.audit_id}" style="margin:4px 0 0 0; font-size:0.75rem; padding:2px 6px;">
+                      ${isExp ? '▲ Masquer' : '▼ Voir le détail'}
+                    </button>
+                  </div>
+                </div>
+
+                ${isExp ? `
+                  <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:8px; display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:6px;">
+                    ${Object.entries(e.domain_scores || {}).map(([dCode, dScore]) => `
+                      <div style="background:rgba(15,23,42,0.4); padding:4px 6px; border-radius:4px; font-size:0.72rem; display:flex; justify-content:space-between;">
+                        <span>${dCode}</span>
+                        <strong style="color:#93c5fd;">${Number(dScore).toFixed(1)}</strong>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   _renderTabBody(isProvisional) {
+    
+    if (this._activeTab === 'evolution') {
+      const globalSensor = this._getGlobalScoreEntity();
+      const evo = globalSensor?.attributes?.evolution || {};
+      const entries = evo.history_entries || [];
+
+      if (!entries || entries.length === 0) {
+        return `
+          <div style="background:rgba(59,130,246,0.08); border-left:3px solid #3b82f6; border-radius:8px; padding:18px; text-align:center; color:#93c5fd; line-height:1.5;">
+            <div style="font-size:1.1rem; font-weight:700; margin-bottom:6px;">📈 Historique d'évolution</div>
+            Aucun audit complet n'a encore été finalisé.<br/>
+            <span style="font-size:0.83rem; color:var(--shs-muted);">Terminez votre premier audit (100 % des critères) pour initier votre courbe d'évolution.</span>
+          </div>
+        `;
+      }
+
+      if (entries.length === 1) {
+        const e = entries[0];
+        return `
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="background:rgba(16,185,129,0.1); border-left:3px solid #10b981; border-radius:8px; padding:14px; color:#a7f3d0;">
+              <div style="font-weight:700; font-size:0.95rem; margin-bottom:4px;">Premier audit de référence finalisé</div>
+              <div style="font-size:0.85rem; color:#cbd5e1;">
+                Score enregistré : <strong>${e.global_score.toFixed(1)} / 100</strong> le ${e.completed_at || e.date}.
+              </div>
+              <div style="font-size:0.8rem; color:#94a3b8; margin-top:6px;">
+                📍 Votre premier audit servira de point de référence pour mesurer votre progression au fil de vos améliorations.
+              </div>
+            </div>
+
+            ${this._renderHistoryList(entries)}
+          </div>
+        `;
+      }
+
+      // 2 or more completed audits
+      const domProg = evo.domain_progressions || {};
+      
+      // SVG Chart calculation
+      const chartPoints = entries.map((en, idx) => {
+        const x = entries.length === 1 ? 150 : 25 + (idx * (250 / (entries.length - 1)));
+        const y = 65 - ((en.global_score / 100) * 50);
+        return { x, y, score: en.global_score, date: en.completed_at || en.date };
+      });
+      const polylinePoints = chartPoints.map(p => `${p.x},${p.y}`).join(' ');
+
+      return `
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <!-- 1. En-tête résumé -->
+          <div style="background:var(--shs-card-bg); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px;">
+            <div style="font-size:0.8rem; color:var(--shs-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Évolution du Smart Home Score</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+              <div style="font-size:1.35rem; font-weight:800; color:#f8fafc;">
+                ${evo.first_audit_score.toFixed(1)} <span style="color:#94a3b8; font-size:1rem;">➔</span> <span style="color:#38bdf8;">${evo.latest_audit_score.toFixed(1)}</span>
+                <span style="font-size:0.85rem; color:var(--shs-muted); font-weight:500;">/ 100</span>
+              </div>
+              <div style="font-size:0.85rem; font-weight:700; padding:4px 10px; border-radius:20px; ${evo.total_progression >= 0 ? 'background:rgba(16,185,129,0.15); color:#34d399;' : 'background:rgba(239,68,68,0.15); color:#f87171;'}">
+                ${evo.total_progression >= 0 ? '+' : ''}${evo.total_progression.toFixed(1)} pts depuis le premier audit
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--shs-muted); margin-top:8px; border-top:1px solid rgba(255,255,255,0.06); padding-top:6px;">
+              <span>Premier audit : ${evo.first_completed_at}</span>
+              <span>Dernier audit : ${evo.latest_completed_at}</span>
+            </div>
+            ${evo.has_model_version_mismatch ? `
+              <div style="margin-top:8px; font-size:0.75rem; color:#f59e0b; background:rgba(245,158,11,0.1); padding:6px 10px; border-radius:6px;">
+                ⚠️ Le référentiel a évolué entre ces deux audits. La comparaison est indicative.
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- 2. Courbe SVG du score global -->
+          <div style="background:var(--shs-card-bg); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px;">
+            <div style="font-size:0.8rem; font-weight:700; color:#cbd5e1; margin-bottom:6px;">📈 Trajectoire du Score Global</div>
+            <svg viewBox="0 0 300 80" style="width:100%; height:auto; overflow:visible;">
+              <line x1="20" y1="65" x2="280" y2="65" stroke="rgba(255,255,255,0.1)" stroke-dasharray="2" />
+              <line x1="20" y1="40" x2="280" y2="40" stroke="rgba(255,255,255,0.1)" stroke-dasharray="2" />
+              <line x1="20" y1="15" x2="280" y2="15" stroke="rgba(255,255,255,0.1)" stroke-dasharray="2" />
+              
+              <polyline fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${polylinePoints}" />
+              
+              ${chartPoints.map(p => `
+                <circle cx="${p.x}" cy="${p.y}" r="4" fill="#0284c7" stroke="#ffffff" stroke-width="1.5" />
+                <text x="${p.x}" y="${p.y - 7}" font-size="7" font-weight="700" fill="#38bdf8" text-anchor="middle">${p.score.toFixed(1)}</text>
+              `).join('')}
+            </svg>
+          </div>
+
+          <!-- 3. Vos plus belles progressions -->
+          ${evo.top_progressions && evo.top_progressions.length > 0 ? `
+            <div style="background:linear-gradient(135deg, rgba(245,158,11,0.12), rgba(59,130,246,0.08)); border:1px solid rgba(245,158,11,0.25); border-radius:10px; padding:12px 14px;">
+              <div style="font-weight:700; font-size:0.85rem; color:#fbbf24; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                <span>🏆</span> <span>Vos plus belles progressions</span>
+              </div>
+              <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                ${evo.top_progressions.map(tp => `
+                  <div style="background:rgba(15,23,42,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:6px 10px; font-size:0.8rem; display:flex; align-items:center; gap:6px;">
+                    <span>${tp.domain_name}</span>
+                    <strong style="color:#34d399;">+${tp.delta.toFixed(1)} pts</strong>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- 4. Progression des 8 domaines -->
+          <div style="background:var(--shs-card-bg); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px;">
+            <div style="font-size:0.8rem; font-weight:700; color:#cbd5e1; margin-bottom:10px;">🏛️ Progression par domaine</div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px;">
+              ${Object.keys(domProg).map(k => {
+                const dp = domProg[k];
+                const isPos = dp.delta > 0;
+                const isNeg = dp.delta < 0;
+                const deltaColor = isPos ? '#34d399' : (isNeg ? '#f87171' : 'var(--shs-muted)');
+                const deltaSign = isPos ? '+' : '';
+                return `
+                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:8px 10px;">
+                    <div style="font-size:0.75rem; font-weight:600; color:var(--shs-text); margin-bottom:3px;">${dp.name}</div>
+                    <div style="font-size:0.78rem; color:var(--shs-muted);">
+                      ${dp.first.toFixed(1)} ➔ <strong>${dp.latest.toFixed(1)}</strong>
+                    </div>
+                    <div style="font-size:0.75rem; font-weight:700; color:${deltaColor}; margin-top:2px;">
+                      ${deltaSign}${dp.delta.toFixed(1)} pts
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- 5. Historique des audits -->
+          ${this._renderHistoryList(entries)}
+        </div>
+      `;
+    }
+
     if (this._activeTab === 'domains') {
       const globalSensor = this._getGlobalScoreEntity();
       const domScores = globalSensor?.attributes?.domain_scores || {};

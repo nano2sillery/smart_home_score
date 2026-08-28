@@ -1,5 +1,15 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.15] - 2026-08-28
+### Nouvel Onglet 📈 Évolution & Suivi de Progression Temporelle
+- **Onglet 📈 Évolution Dédié** : Visualisation claire de la trajectoire de maturité de la maison (`83,1 → 92,4 → 94,8`).
+- **Graphique Dynamique du Score Global** : Courbe SVG épurée reliant les snapshots historiques officiels.
+- **Top Progressions** : Mise en valeur des 3 domaines ayant le plus progressé (`🏆 Vos plus belles progressions`).
+- **Progression par Domaine** : Comparatif détaillé des 8 domaines (`premier audit ➔ dernier audit` avec delta badge).
+- **Historique Chronologique Déroulable** : Consultation de chaque audit avec ses métadonnées et le détail des 8 scores de domaines.
+- **Gestion des Modèles & Cas Limites** : Prise en charge propre de 0 audit, 1 audit de référence, multi-audits et alerte en cas de changement de `MODEL_VERSION`.
+- **Suite de 88 Tests Automatisés Validée** (100% de succès).
+
 ## [0.7.0-beta.14] - 2026-08-28
 ### Historisation Immédiate à la Finalisation, Immutabilité & Traçabilité audit_id
 - **Historisation Immédiate à 100%** : Dès qu'un audit atteint 100% de complétude, son snapshot historique officiel est immédiatement créé avec l'horodatage exact de finalisation (`completed_at`).
