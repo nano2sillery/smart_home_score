@@ -1,12 +1,12 @@
 /**
- * Smart Home Score Lovelace Custom Card (v0.7.0-beta.9)
+ * Smart Home Score Lovelace Custom Card (v0.7.0-beta.11)
  * Author: Cyrille LEFRANC
  * 100% Local Lovelace Card for Home Assistant.
  * Intelligent Automated System Scanner, Assisted Pre-filled Proposals, Live Scoring & Human Audit.
  */
 
 console.info(
-  '%c SMART-HOME-SCORE %c v0.7.0-beta.9 ',
+  '%c SMART-HOME-SCORE %c v0.7.0-beta.11 ',
   'color: white; background: #3b82f6; font-weight: 700; border-radius: 3px 0 0 3px;',
   'color: #3b82f6; background: #1e293b; font-weight: 700; border-radius: 0 3px 3px 0;'
 );
@@ -2373,7 +2373,7 @@ class SmartHomeScoreCard extends HTMLElement {
             <div class="shs-branding">
               <span>🏠 Smart Home Score</span>
             </div>
-            <span class="shs-badge-beta">Bêta v0.7.0-beta.9</span>
+            <span class="shs-badge-beta">Bêta v0.7.0-beta.11</span>
           </div>
 
           ${this._renderCurrentView(scoreVal, completenessVal, maturityText, criticalCount, potentialGain, isProvisional)}
@@ -2387,6 +2387,8 @@ class SmartHomeScoreCard extends HTMLElement {
   }
 
   _renderCurrentView(scoreVal, completenessVal, maturityText, criticalCount, potentialGain, isProvisional) {
+    const globalScoreEntity = this._getGlobalScoreEntity();
+    const stats = globalScoreEntity?.attributes?.installation_stats || {};
     if (this._view === 'welcome') {
       return `
         <div class="shs-welcome-box">
@@ -2573,6 +2575,13 @@ class SmartHomeScoreCard extends HTMLElement {
     }
 
     return `
+      ${stats.devices_count ? `
+        <div style="font-size:0.78rem; color:#93c5fd; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.2); border-radius:8px; padding:7px 12px; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+          <span>🔎</span>
+          <span><strong>Analyse :</strong> ${stats.devices_count} appareils • ${stats.entities_count} entités • ${stats.automations_count} automatisations • ${stats.integrations_count} intégrations</span>
+        </div>
+      ` : ''}
+
       <div class="shs-score-hero">
         <div class="shs-score-row">
           <div>
@@ -2588,9 +2597,12 @@ class SmartHomeScoreCard extends HTMLElement {
         <div class="shs-progress-bar">
           <div class="shs-progress-fill" style="width: ${Math.min(100, Math.max(0, completenessVal))}%;"></div>
         </div>
-        <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--shs-muted);">
-          <span>Éléments traités : ${completenessVal.toFixed(0)} %</span>
-          <span>Potentiel : +${potentialGain.toFixed(1)} pts</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; color:var(--shs-muted);">
+          <span>Éléments traités : <strong>${completenessVal.toFixed(0)} %</strong></span>
+          <button id="btn-click-potential" style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#34d399; padding:3px 8px; border-radius:6px; font-weight:700; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.2s;" title="Cliquez pour afficher les actions d'amélioration">
+            <span>⚡ Potentiel : +${potentialGain.toFixed(1)} pts</span>
+            <span style="font-size:0.7rem;">👉</span>
+          </button>
         </div>
       </div>
 
@@ -2771,8 +2783,19 @@ class SmartHomeScoreCard extends HTMLElement {
       });
     });
 
+    this.shadowRoot.getElementById('btn-click-potential')?.addEventListener('click', () => {
+      this._activeTab = 'actions';
+      this._render();
+    });
+
     this.shadowRoot.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', (e) => {
+        this._isBusy = true;
+        this._render();
+        setTimeout(() => {
+          this._isBusy = false;
+          this._render();
+        }, 500);
         const action = e.currentTarget.getAttribute('data-action');
         const pending = this._getPendingCriteria();
         const crit = pending[this._currentQuestionIndex];

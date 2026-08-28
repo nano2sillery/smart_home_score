@@ -1,5 +1,11 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.11] - 2026-08-28
+### Ligne Synthétique d'Analyse, Potentiel Cliquable & Feedback Visuel Loader
+- **Bannière Synthétique d'Inspection Réelle** : Affichage systématique en tête de la ligne `🔎 Analyse : X appareils • Y entités • Z automatisations • W intégrations`.
+- **Raccourci Interactif Potentiel** : Le badge `⚡ Potentiel : +X.X pts` dans le bloc de score est désormais cliquable et ouvre immédiatement l'onglet **Actions**.
+- **Indicateur de Chargement / Loader Réactif** : Affichage d'un spinner semi-transparent élégant lors des actions et calculs de synchronisation pour un feedback instantané.
+
 ## [0.7.0-beta.10] - 2026-08-28
 ### Onglet Actions Opérationnel, Transparence d'Analyse du Scan & Compteurs Clairs
 - **Onglet Actions & Recommandations Riches** : Génération systématique des fiches d'action pour chaque critère perfectible (< 4/4) avec Situation actuelle, Objectif suivant, Gain potentiel précis (+X pt), Effort (Facile/Moyen/Avancé), Type d'action et conseils d'amélioration officiels du référentiel v1.0.
