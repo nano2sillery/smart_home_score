@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import time
+import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -55,6 +56,7 @@ class SmartHomeScoreCoordinator(DataUpdateCoordinator[AuditResult]):
         self.tracker = ChangeTracker(self.rule_engine)
         self.store = SmartHomeScoreStore(hass, model_version=self.model_version)
         self.criteria_states: dict[str, CriterionState] = {}
+        self.current_audit_id: str = f"audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
         self.last_snapshot: InstallationSnapshot | None = None
         self.last_audit_date: str | None = None
         self.last_analysis_duration_ms: float = 0.0
@@ -145,10 +147,16 @@ class SmartHomeScoreCoordinator(DataUpdateCoordinator[AuditResult]):
         self.last_audit_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         await self.store.async_save(self.criteria_states, last_audit_date=self.last_audit_date)
         
-        # If audit reached 100% completeness, record history entry
+        # When audit transitions to 100% completeness, record official snapshot immediately
         current_res = self._calculate_current_result()
-        if not current_res.is_provisional:
-            await self.history_mgr.async_record_audit(current_res, note="Audit complet finalisé")
+        if current_res.completeness >= 100.0 and not current_res.is_provisional:
+            if not self.history_mgr.has_entry(self.current_audit_id):
+                await self.history_mgr.async_record_audit(
+                    current_res,
+                    audit_id=self.current_audit_id,
+                    completed_at=self.last_audit_date,
+                    note="Audit complet finalisé",
+                )
 
         await self.async_refresh()
 
@@ -184,14 +192,19 @@ class SmartHomeScoreCoordinator(DataUpdateCoordinator[AuditResult]):
         await self.async_refresh()
 
     async def async_reset_audit(self) -> None:
-        """Archive completed audit (completeness == 100%), clear user answers and re-execute clean automatic analysis from scratch."""
+        """Archive completed audit if not already present, generate new audit_id and start fresh cycle."""
         current_res = self._calculate_current_result()
         if current_res.completeness >= 100.0 and not current_res.is_provisional:
-            await self.history_mgr.async_record_audit(
-                current_res,
-                note=f"Audit précédent archivé ({current_res.global_score:.1f}/100)",
-            )
+            if not self.history_mgr.has_entry(self.current_audit_id):
+                await self.history_mgr.async_record_audit(
+                    current_res,
+                    audit_id=self.current_audit_id,
+                    completed_at=self.last_audit_date or datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    note="Audit complet archivé",
+                )
 
+        # Generate a distinct new audit_id for the next audit cycle
+        self.current_audit_id = f"audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
         self.criteria_states.clear()
         await self.async_run_analysis(save_on_complete=True)
         await self.async_refresh()

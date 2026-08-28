@@ -41,10 +41,26 @@ class AuditHistoryManager:
             ]
         return self.history_entries
 
-    async def async_record_audit(self, audit_result: AuditResult, note: str = "") -> AuditHistoryEntry:
-        """Record an audit summary entry without saving heavy snapshots."""
-        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        entry_id = f"audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+    def has_entry(self, audit_id: str) -> bool:
+        """Check if an audit_id is already recorded in history."""
+        return any(e.audit_id == audit_id for e in self.history_entries)
+
+    async def async_record_audit(
+        self,
+        audit_result: AuditResult,
+        audit_id: str | None = None,
+        completed_at: str | None = None,
+        note: str = "",
+    ) -> AuditHistoryEntry:
+        """Record an audit summary entry upon completion without duplicating."""
+        now_str = completed_at or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        entry_id = audit_id or f"audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+
+        # Prevent duplicate recording of the exact same audit_id
+        for existing in self.history_entries:
+            if existing.audit_id == entry_id:
+                _LOGGER.debug("Audit %s already archived in history, skipping duplicate", entry_id)
+                return existing
 
         domain_scores = {
             dom_code: dom_res.score for dom_code, dom_res in audit_result.domains.items()
@@ -69,7 +85,7 @@ class AuditHistoryManager:
             "model_version": self.model_version,
             "entries": [e.to_dict() for e in self.history_entries],
         })
-        _LOGGER.info("Recorded audit history entry %s (Score: %.1f)", entry_id, entry.global_score)
+        _LOGGER.info("Recorded official audit history entry %s (Score: %.1f, Completed: %s)", entry_id, entry.global_score, now_str)
         return entry
 
     def get_history(self, model_version: str | None = None) -> list[AuditHistoryEntry]:

@@ -1,5 +1,13 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.14] - 2026-08-28
+### Historisation Immédiate à la Finalisation, Immutabilité & Traçabilité audit_id
+- **Historisation Immédiate à 100%** : Dès qu'un audit atteint 100% de complétude, son snapshot historique officiel est immédiatement créé avec l'horodatage exact de finalisation (`completed_at`).
+- **Génération Précoce de l'audit_id** : Un `audit_id` unique accompagne chaque audit dès sa création et est conservé jusqu'à l'archivage. Lors d'un `restart_audit`, un nouvel ID distinct est généré.
+- **Immutabilité des Snapshots Historiques** : Toute modification ultérieure de l'entretien actif n'altère en aucun cas le snapshot historique archivé.
+- **Prévention Anti-Doublon** : `restart_audit` vérifie la présence du snapshot avant réinitialisation pour garantir zéro doublon.
+- **Suite de 80 Tests Automatisés Validée** (100% de succès).
+
 ## [0.7.0-beta.13] - 2026-08-28
 ### Protection d'Historique Strict (100% Completeness) & Snapshot Unique
 - **Archivage Conditionné aux Audits Complets** : `restart_audit` n'archive désormais dans l'historique que les audits ayant atteint 100% de complétude (les audits partiels ou interrompus sont ignorés).

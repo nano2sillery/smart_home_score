@@ -193,6 +193,109 @@ class TestRestartAudit(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(history[1].global_score, res2.global_score)
         self.assertNotEqual(history[0].audit_id, history[1].audit_id)
 
+    async def test_completed_audit_is_archived_immediately(self):
+        """Test that reaching 100% completeness immediately archives the audit into history."""
+        from custom_components.smart_home_score.engine.history import AuditHistoryManager
+
+        self.coordinator.history_mgr = AuditHistoryManager(self.hass)
+        self.coordinator.history_mgr._store.async_save = AsyncMock()
+
+        # Fill 58 criteria out of 59
+        cids = list(self.coordinator.criteria_states.keys())
+        for cid in cids[:-1]:
+            self.coordinator.criteria_states[cid].effective_score = 4
+            self.coordinator.criteria_states[cid].status = CriterionStatus.CONFIRMED
+
+        # Not complete yet
+        self.assertEqual(len(self.coordinator.history_mgr.history_entries), 0)
+
+        # Answer the 59th criterion via submit_answer
+        last_cid = cids[-1]
+        await self.coordinator.async_submit_answer(last_cid, "4")
+
+        # Must be immediately archived
+        self.assertEqual(len(self.coordinator.history_mgr.history_entries), 1)
+        entry = self.coordinator.history_mgr.history_entries[0]
+        self.assertEqual(entry.audit_id, self.coordinator.current_audit_id)
+        self.assertEqual(entry.completeness, 100.0)
+
+    async def test_restart_does_not_duplicate_completed_audit(self):
+        """Test that restarting an already archived audit does NOT create a duplicate entry in history."""
+        from custom_components.smart_home_score.engine.history import AuditHistoryManager
+
+        self.coordinator.history_mgr = AuditHistoryManager(self.hass)
+        self.coordinator.history_mgr._store.async_save = AsyncMock()
+
+        # Complete all 59 criteria
+        for cid in self.coordinator.criteria_states:
+            self.coordinator.criteria_states[cid].effective_score = 4
+            self.coordinator.criteria_states[cid].status = CriterionStatus.CONFIRMED
+
+        # Archive once
+        res = self.coordinator._calculate_current_result()
+        await self.coordinator.history_mgr.async_record_audit(res, audit_id=self.coordinator.current_audit_id)
+        self.assertEqual(len(self.coordinator.history_mgr.history_entries), 1)
+
+        # Trigger restart_audit
+        await self.coordinator.async_restart_audit()
+
+        # History must still contain exactly 1 entry (no duplicate created)
+        self.assertEqual(len(self.coordinator.history_mgr.history_entries), 1)
+
+    async def test_editing_completed_audit_does_not_mutate_history_snapshot(self):
+        """Test that modifying answers after completion does NOT mutate the saved historical snapshot."""
+        from custom_components.smart_home_score.engine.history import AuditHistoryManager
+
+        self.coordinator.history_mgr = AuditHistoryManager(self.hass)
+        self.coordinator.history_mgr._store.async_save = AsyncMock()
+
+        for cid in self.coordinator.criteria_states:
+            self.coordinator.criteria_states[cid].effective_score = 4
+            self.coordinator.criteria_states[cid].status = CriterionStatus.CONFIRMED
+
+        # Reached 100/100
+        res = self.coordinator._calculate_current_result()
+        await self.coordinator.history_mgr.async_record_audit(res, audit_id=self.coordinator.current_audit_id)
+        historical_score = self.coordinator.history_mgr.history_entries[0].global_score
+        self.assertEqual(historical_score, 100.0)
+
+        # User modifies ELEC01 to 0/4
+        self.coordinator.criteria_states["ELEC01"].effective_score = 0
+        active_res = self.coordinator._calculate_current_result()
+        self.assertLess(active_res.global_score, 100.0)
+
+        # Historical snapshot must remain immutable at 100.0
+        self.assertEqual(self.coordinator.history_mgr.history_entries[0].global_score, 100.0)
+
+    async def test_new_audit_gets_new_audit_id(self):
+        """Test that start/restart audit assigns a brand new distinct audit_id."""
+        id_before = self.coordinator.current_audit_id
+        await self.coordinator.async_restart_audit()
+        id_after = self.coordinator.current_audit_id
+
+        self.assertNotEqual(id_before, id_after)
+        self.assertTrue(id_after.startswith("audit_"))
+
+    async def test_completed_at_is_actual_completion_time(self):
+        """Test that completed_at reflects the exact timestamp when audit reached 100%."""
+        from custom_components.smart_home_score.engine.history import AuditHistoryManager
+
+        self.coordinator.history_mgr = AuditHistoryManager(self.hass)
+        self.coordinator.history_mgr._store.async_save = AsyncMock()
+
+        cids = list(self.coordinator.criteria_states.keys())
+        for cid in cids[:-1]:
+            self.coordinator.criteria_states[cid].effective_score = 4
+            self.coordinator.criteria_states[cid].status = CriterionStatus.CONFIRMED
+
+        # Finalize by answering the last criterion
+        await self.coordinator.async_submit_answer(cids[-1], "4")
+
+        self.assertEqual(len(self.coordinator.history_mgr.history_entries), 1)
+        entry = self.coordinator.history_mgr.history_entries[0]
+        self.assertIsNotNone(entry.completed_at)
+        self.assertEqual(entry.completeness, 100.0)
+
     async def test_restart_audit_returns_to_first_interview_step(self):
         """Test that the frontend card starts from question index 0 after restart."""
         pass
