@@ -2624,6 +2624,12 @@ class SmartHomeScoreCard extends HTMLElement {
           🔄 Rescan
         </button>
       </div>
+
+      <div style="text-align:center; margin-top:10px;">
+        <button id="btn-open-restart-modal" style="background:transparent; border:none; color:var(--shs-muted); font-size:0.78rem; text-decoration:underline; cursor:pointer; padding:4px 8px; transition:color 0.2s;">
+          Faire un nouvel audit (recommencer depuis zéro)
+        </button>
+      </div>
     `;
   }
 
@@ -2846,6 +2852,31 @@ class SmartHomeScoreCard extends HTMLElement {
         this._view = 'discovery';
         this._render();
       }, 1200);
+    });
+
+    this.shadowRoot.getElementById('btn-open-restart-modal')?.addEventListener('click', () => {
+      this._showRestartModal = true;
+      this._render();
+    });
+
+    this.shadowRoot.getElementById('btn-cancel-restart')?.addEventListener('click', () => {
+      this._showRestartModal = false;
+      this._render();
+    });
+
+    this.shadowRoot.getElementById('btn-confirm-restart')?.addEventListener('click', async () => {
+      this._showRestartModal = false;
+      this._isBusy = true;
+      this._render();
+      try {
+        await this._hass?.callService('smart_home_score', 'restart_audit', {});
+      } catch (err) {
+        console.warn('Service restart_audit notice:', err);
+      }
+      this._currentQuestionIndex = 0;
+      this._view = 'discovery';
+      this._isBusy = false;
+      this._render();
     });
 
     this.shadowRoot.getElementById('tab-overview')?.addEventListener('click', () => {

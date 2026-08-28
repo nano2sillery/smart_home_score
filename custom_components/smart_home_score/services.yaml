@@ -1,0 +1,54 @@
+submit_answer:
+  name: Répondre à un critère
+  description: Applique la réponse d'un utilisateur à un critère d'audit spécifique et recalcule le score.
+  fields:
+    criterion_id:
+      name: Identifiant du critère
+      description: ID officiel du critère (ex. AUTO01, ELEC01).
+      required: true
+      example: "AUTO01"
+      selector:
+        text:
+    answer_key:
+      name: Clé de réponse
+      description: Clé de la réponse sélectionnée par l'utilisateur (ex. score_4, score_0, not_applicable, unknown).
+      required: true
+      example: "score_4"
+      selector:
+        text:
+
+skip_question:
+  name: Passer la question
+  description: Ignore temporairement la question pour y revenir plus tard sans assigner de note.
+  fields:
+    criterion_id:
+      name: Identifiant du critère
+      description: ID officiel du critère (ex. AUTO01).
+      required: true
+      example: "AUTO01"
+      selector:
+        text:
+
+run_analysis:
+  name: Lancer un rescan de l'environnement
+  description: Réanalyse les entités et intégrations Home Assistant actuelles tout en conservant les réponses de l'utilisateur.
+
+restart_audit:
+  name: Faire un nouvel audit (Recommencer depuis zéro)
+  description: Archive l'audit actuel dans l'historique, réinitialise toutes les réponses actives et lance un nouveau cycle complet d'inspection.
+
+reset_audit:
+  name: Réinitialiser l'audit
+  description: Archive l'audit actuel dans l'historique et réinitialise les réponses pour repartir d'un scan vierge.
+
+record_history:
+  name: Enregistrer un point d'historique
+  description: Enregistre manuellement l'état actuel de l'audit dans l'historique d'évolution.
+  fields:
+    note:
+      name: Note / Commentaire
+      description: Note explicative facultative pour ce point d'étape.
+      required: false
+      example: "Fin d'aménagement salon"
+      selector:
+        text:

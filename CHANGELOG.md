@@ -1,5 +1,13 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.12] - 2026-08-28
+### Action 'Faire un nouvel audit', Archivage Automatique & Boîte de Confirmation
+- **Action 'Faire un nouvel audit' (`restart_audit`)** : Permet de repartir d'un scan 100% vierge sans réinjecter les anciennes réponses de l'utilisateur.
+- **Archivage Automatique en Historique** : L'audit précédent terminé est automatiquement sauvegardé dans l'historique d'évolution avant la réinitialisation.
+- **Boîte de Confirmation UX** : Fenêtre modale de confirmation explicite prévenant toute fausse manipulation.
+- **Différenciation Nette Rescan vs Nouvel Audit** : `Rescan` conserve les réponses acquises et vérifie les dérives ; `Faire un nouvel audit` relance un cycle complet depuis zéro.
+- **Suite de 71 Tests Automatisés** (100% de succès).
+
 ## [0.7.0-beta.11] - 2026-08-28
 ### Ligne Synthétique d'Analyse, Potentiel Cliquable & Feedback Visuel Loader
 - **Bannière Synthétique d'Inspection Réelle** : Affichage systématique en tête de la ligne `🔎 Analyse : X appareils • Y entités • Z automatisations • W intégrations`.

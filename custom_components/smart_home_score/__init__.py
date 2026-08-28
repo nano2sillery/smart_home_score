@@ -26,6 +26,7 @@ from .const import (
     SERVICE_RECORD_HISTORY,
     SERVICE_REEVALUATE_CRITERION,
     SERVICE_RESET_AUDIT,
+    SERVICE_RESTART_AUDIT,
     SERVICE_RUN_ANALYSIS,
     SERVICE_SIMULATE_IMPROVEMENT,
     SERVICE_SKIP_QUESTION,
@@ -199,6 +200,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.services.async_register(DOMAIN, SERVICE_SUBMIT_ANSWER, handle_submit_answer, schema=SUBMIT_ANSWER_SCHEMA)
     hass.services.async_register(DOMAIN, SERVICE_SKIP_QUESTION, handle_skip_question, schema=SKIP_QUESTION_SCHEMA)
     hass.services.async_register(DOMAIN, SERVICE_RESET_AUDIT, handle_reset_audit)
+    hass.services.async_register(DOMAIN, SERVICE_RESTART_AUDIT, handle_reset_audit)
     hass.services.async_register(DOMAIN, SERVICE_RUN_ANALYSIS, handle_run_analysis)
     hass.services.async_register(DOMAIN, SERVICE_SIMULATE_IMPROVEMENT, handle_simulate_improvement, schema=SIMULATE_SCHEMA)
     hass.services.async_register(DOMAIN, SERVICE_REEVALUATE_CRITERION, handle_reevaluate_criterion, schema=REEVALUATE_SCHEMA)
@@ -218,6 +220,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.services.async_remove(DOMAIN, SERVICE_SUBMIT_ANSWER)
             hass.services.async_remove(DOMAIN, SERVICE_SKIP_QUESTION)
             hass.services.async_remove(DOMAIN, SERVICE_RESET_AUDIT)
+            hass.services.async_remove(DOMAIN, SERVICE_RESTART_AUDIT)
             hass.services.async_remove(DOMAIN, SERVICE_RUN_ANALYSIS)
             hass.services.async_remove(DOMAIN, SERVICE_SIMULATE_IMPROVEMENT)
             hass.services.async_remove(DOMAIN, SERVICE_REEVALUATE_CRITERION)

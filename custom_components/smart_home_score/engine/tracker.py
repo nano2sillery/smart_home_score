@@ -9,6 +9,8 @@ from .models import (
     ChangeCategory,
     CriterionState,
     CriterionStatus,
+    EvaluationSource,
+    EvidenceType,
     InstallationSnapshot,
     RuleEvaluationResult,
 )
@@ -95,6 +97,7 @@ class ChangeTracker:
                     current_state.reason_if_not_auto = new_eval.reason_if_not_auto
                     current_state.applicable = new_eval.applicable
                     if new_eval.evidence and new_eval.proposed_score is not None:
-                        current_state.status = CriterionStatus.CAPABILITY_EVIDENCE
+                        current_state.status = new_eval.status
+                        current_state.evidence_type = EvidenceType.CAPABILITY_EVIDENCE
 
         return current_states, flagged_review_ids
