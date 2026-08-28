@@ -1,12 +1,12 @@
 /**
- * Smart Home Score Lovelace Custom Card (v0.7.0-beta.16)
+ * Smart Home Score Lovelace Custom Card (v0.7.0-beta.17)
  * Author: Cyrille LEFRANC
  * 100% Local Lovelace Card for Home Assistant.
  * Intelligent Automated System Scanner, Assisted Pre-filled Proposals, Live Scoring & Human Audit.
  */
 
 console.info(
-  '%c SMART-HOME-SCORE %c v0.7.0-beta.16 ',
+  '%c SMART-HOME-SCORE %c v0.7.0-beta.17 ',
   'color: white; background: #3b82f6; font-weight: 700; border-radius: 3px 0 0 3px;',
   'color: #3b82f6; background: #1e293b; font-weight: 700; border-radius: 0 3px 3px 0;'
 );
@@ -2373,7 +2373,7 @@ class SmartHomeScoreCard extends HTMLElement {
             <div class="shs-branding">
               <span>🏠 Smart Home Score</span>
             </div>
-            <span class="shs-badge-beta">Bêta v0.7.0-beta.16</span>
+            <span class="shs-badge-beta">Bêta v0.7.0-beta.17</span>
           </div>
 
           ${this._renderCurrentView(scoreVal, completenessVal, maturityText, criticalCount, potentialGain, isProvisional)}
@@ -2634,7 +2634,7 @@ class SmartHomeScoreCard extends HTMLElement {
 
       <div style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:var(--shs-muted);">
         <div>
-          <span>Smart Home Score <strong>v0.7.0-beta.16</strong></span> • <span>Modèle <strong>v1.0</strong></span>
+          <span>Smart Home Score <strong>v0.7.0-beta.17</strong></span> • <span>Modèle <strong>v1.0</strong></span>
         </div>
         <div>
           <button id="btn-download-diag" style="background:transparent; border:none; color:#38bdf8; font-size:0.72rem; text-decoration:underline; cursor:pointer; padding:2px 4px;">
@@ -2642,6 +2642,21 @@ class SmartHomeScoreCard extends HTMLElement {
           </button>
         </div>
       </div>
+
+      ${this._showRestartModal ? `
+        <div style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:99999; padding:16px;">
+          <div style="background:#1e293b; border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:20px; max-width:400px; width:100%; box-shadow:0 10px 25px rgba(0,0,0,0.6);">
+            <div style="font-weight:700; font-size:1.05rem; color:#f8fafc; margin-bottom:8px;">🔄 Recommencer l'audit depuis zéro ?</div>
+            <div style="font-size:0.85rem; color:#cbd5e1; line-height:1.4; margin-bottom:16px;">
+              Si l'audit actif est complet, il sera conservé dans votre historique d'évolution. Vos réponses actives seront réinitialisées et un nouveau scan sera lancé.
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+              <button class="shs-btn shs-btn-sec" id="btn-cancel-restart" style="width:auto; font-size:0.82rem; padding:6px 12px;">Annuler</button>
+              <button class="shs-btn" id="btn-confirm-restart" style="width:auto; font-size:0.82rem; padding:6px 12px; background:#ef4444; border-color:#dc2626; color:#ffffff;">🔄 Recommencer</button>
+            </div>
+          </div>
+        </div>
+      ` : ''}
     `;
   }
 
@@ -2651,7 +2666,7 @@ class SmartHomeScoreCard extends HTMLElement {
     const globalSensor = this._getGlobalScoreEntity();
     const attrs = globalSensor?.attributes || {};
     const diagData = {
-      integration_version: "0.7.0-beta.16",
+      integration_version: "0.7.0-beta.17",
       is_beta: true,
       model_version: "1.0",
       author: "Cyrille LEFRANC",
@@ -3121,6 +3136,24 @@ class SmartHomeScoreCard extends HTMLElement {
     this.shadowRoot.getElementById('tab-actions')?.addEventListener('click', () => {
       this._activeTab = 'actions';
       this._render();
+    });
+
+    this.shadowRoot.getElementById('tab-evolution')?.addEventListener('click', () => {
+      this._activeTab = 'evolution';
+      this._render();
+    });
+
+    this.shadowRoot.getElementById('btn-download-diag')?.addEventListener('click', () => {
+      this._downloadDiagnostics();
+    });
+
+    this.shadowRoot.querySelectorAll('[data-toggle-audit]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const aId = e.currentTarget.getAttribute('data-toggle-audit');
+        if (!this._expandedAudits) this._expandedAudits = {};
+        this._expandedAudits[aId] = !this._expandedAudits[aId];
+        this._render();
+      });
     });
   }
 }

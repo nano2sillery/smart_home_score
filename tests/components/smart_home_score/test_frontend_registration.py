@@ -32,9 +32,16 @@ const jsCode = fs.readFileSync('/Users/LEFRANCC/HomeAssistant/custom_components/
 
 class HTMLElement {
   constructor() {
+    this._listeners = {};
     this.shadowRoot = {
       innerHTML: '',
-      getElementById: (id) => ({ addEventListener: (event, fn) => {} }),
+      getElementById: (id) => {
+        const self = this;
+        return {
+          addEventListener: (event, fn) => { self._listeners[id] = fn; },
+          click: () => { if (self._listeners[id]) self._listeners[id](); }
+        };
+      },
       querySelectorAll: (sel) => []
     };
   }
@@ -123,13 +130,27 @@ if (!card.shadowRoot.innerHTML.includes('Sécurité électrique')) {
   throw new Error('Domains tab rendering failed');
 }
 
-// Test evolution tab rendering
+// Test evolution tab rendering and clicking
 card._view = 'cockpit';
-card._activeTab = 'evolution';
+card._activeTab = 'overview';
 card._render();
-if (!card.shadowRoot.innerHTML.includes('Historique d\\'évolution') && !card.shadowRoot.innerHTML.includes('Évolution du Smart Home Score')) {
-  throw new Error('Evolution tab rendering failed');
-}
+const tabEvo = card.shadowRoot.getElementById('tab-evolution');
+if (!tabEvo) throw new Error('tab-evolution element not found');
+tabEvo.click();
+if (card._activeTab !== 'evolution') throw new Error('Clicking tab-evolution did not activate evolution tab');
+
+// Test restart modal button click
+const btnRestart = card.shadowRoot.getElementById('btn-open-restart-modal');
+if (!btnRestart) throw new Error('btn-open-restart-modal element not found');
+btnRestart.click();
+if (!card._showRestartModal) throw new Error('Clicking btn-open-restart-modal did not open modal');
+if (!card.shadowRoot.innerHTML.includes('Recommencer l\\'audit depuis zéro ?')) throw new Error('Restart modal dialog not rendered');
+
+// Test cancel restart modal
+const btnCancel = card.shadowRoot.getElementById('btn-cancel-restart');
+if (!btnCancel) throw new Error('btn-cancel-restart element not found');
+btnCancel.click();
+if (card._showRestartModal) throw new Error('Clicking btn-cancel-restart did not close modal');
 
 // Test discovery view rendering
 card._view = 'discovery';

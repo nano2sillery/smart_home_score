@@ -1,5 +1,11 @@
 # 📝 Journal des Modifications (CHANGELOG)
 
+## [0.7.0-beta.17] - 2026-08-28
+### Correction des Événements de Clic (Évolution, Nouvel Audit, Diagnostics)
+- **Fix Tab Évolution & Diagnostics** : Enregistrement complet des écouteurs d'événements pour l'onglet `📈 Évolution`, le bouton `📥 Télécharger les diagnostics` et le déroulé de l'historique chronologique.
+- **Fix Modal Nouvel Audit** : Rendu visuel de la boîte modale de confirmation lors du clic sur `Faire un nouvel audit (recommencer depuis zéro)`.
+- **Suite de 95 Tests Automatisés Validée** avec simulation de clics navigateur dans le test de lifecycle.
+
 ## [0.7.0-beta.16] - 2026-08-28
 ### Stabilisation Bêta Externe, Robustesse & Téléchargement Diagnostics
 - **Feature Freeze & Stabilisation Bêta** : Préparation au déploiement pour bêta-testeurs externes.
